@@ -332,8 +332,7 @@ define(function(require, exports, module) {
 
     if (!metaObj.metaData) {
       metaObj.metaData = {
-        tags: [],
-        description: ''
+        tags: []
       };
     }
 
