@@ -17,7 +17,6 @@
     "private-browsing": false
   },
   "unpack": true,
-    
   "repository": {
     "type": "git",
     "url": "https://github.com/tagspaces/tagspaces.git"
@@ -28,6 +27,7 @@
   ],
   "dependencies": {},
   "devDependencies": {
+    "electron-mocha": "^3.1.1",
     "chai": "~3.5.0",
     "express": "^4.13.3",
     "grunt": "~0.4.2",
@@ -51,7 +51,8 @@
     "load-grunt-tasks": "^3.4.1",
     "mocha": "^2.3.0",
     "mocha-generators": "^1.2.0",
-    "nightmare": "~2.2.0"
+    "nightmare": "~2.2.0",
+    "spectron": "^3.4.0"
   },
   "private": true,
   "scripts": {
@@ -61,6 +62,7 @@
     "webdav": "cd data && cd web && node webdavserver.js",
     "firefoxdev": "cfx run -b ~/Apps/firefoxdev/firefox -p ../mozprofile",
     "firefox": "cfx run -p ../mozprofile --static-args='{ \"disableStrict\": true }'",
-    "testing": "make test"
+    "testing": "make test",
+    "test": "electron-mocha test/test.js"
   }
 }
