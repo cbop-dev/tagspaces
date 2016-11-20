@@ -93,30 +93,7 @@ define(function(require, exports, module) {
 
   function extractTitle(filePath) {
     //console.log('Extracting title from: ' + filePath);
-    var fileName = extractFileNameWithoutExt(filePath);
-    var beginTagContainer = fileName.indexOf(BEGIN_TAG_CONTAINER);
-    var endTagContainer = fileName.lastIndexOf(END_TAG_CONTAINER);
-    /* cases like "", "t", "[" 
-        if( fileName.length <= 1) {
-        // cases like "asd ] asd ["
-        else if (beginTagContainer > endTagContainer) {
-        // case: [ not found in the filename
-        else if ( beginTagContainer < 0 ) 
-        else if ( endTagContainer < 0 ) */
-    if (beginTagContainer >= 0 && beginTagContainer < endTagContainer) {
-      if (beginTagContainer === 0 && endTagContainer === fileName.trim().length) {
-        // case: "[tag1, tag2]"
-        return '';
-      } else if (endTagContainer === fileName.trim().length) {
-        // case: "asd[tag1, tag2]"
-        return fileName.slice(0, beginTagContainer);
-      } else {
-        // case: "title1 [tag1 tag2] title2"
-        return fileName.slice(0, beginTagContainer) + fileName.slice(endTagContainer + 1, fileName.length);
-      }
-    } else {
-      return fileName;
-    }
+	return extractFileNameWithoutExt(filePath);
   }
 
   function formatFileSize(sizeInBytes, siSystem) {
