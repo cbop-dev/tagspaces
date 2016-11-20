@@ -31,8 +31,8 @@ define(function(require, exports, module) {
   function extractFileNameWithoutExt(filePath) {
     var fileName = extractFileName(filePath);
     var indexOfDot = fileName.lastIndexOf('.');
-    var lastIndexBeginTagContainer = fileName.lastIndexOf(BEGIN_TAG_CONTAINER);
-    var lastIndexEndTagContainer = fileName.lastIndexOf(END_TAG_CONTAINER);
+    var lastIndexBeginTagContainer = -1; //fileName.lastIndexOf(BEGIN_TAG_CONTAINER);
+    var lastIndexEndTagContainer = -1; //fileName.lastIndexOf(END_TAG_CONTAINER);
     if (lastIndexBeginTagContainer === 0 && lastIndexEndTagContainer + 1 === fileName.length) {
       // case: "[tag1 tag.2]"
       return '';
@@ -300,41 +300,7 @@ define(function(require, exports, module) {
 
   // Internal
   function generateFileName(fileName, tags) {
-    var tagsString = '';
-    // Creating the string will all the tags by more that 0 tags
-    if (tags.length > 0) {
-      tagsString = BEGIN_TAG_CONTAINER;
-      for (var i = 0; i < tags.length; i++) {
-        tagsString += tags[i] + TSCORE.Config.getTagDelimiter();
-      }
-      tagsString = tagsString.trim();
-      tagsString += END_TAG_CONTAINER;
-    }
-    console.log('The tags string: ' + tagsString);
-    var fileExt = extractFileExtension(fileName);
-    console.log('Filename: ' + fileName + ' file extenstion: ' + fileExt);
-    // Assembling the new filename with the tags    
-    var newFileName = '';
-    var beginTagContainer = fileName.indexOf(BEGIN_TAG_CONTAINER);
-    var endTagContainer = fileName.indexOf(END_TAG_CONTAINER);
-    var lastDotPosition = fileName.lastIndexOf('.');
-    if (beginTagContainer < 0 || endTagContainer < 0 || beginTagContainer >= endTagContainer) {
-      // Filename does not contains tags.        
-      if (lastDotPosition < 0) {
-        // File does not have an extension
-        newFileName = fileName + tagsString;
-      } else {
-        // File has an extension
-        newFileName = fileName.substring(0, lastDotPosition) + TSCORE.Config.getPrefixTagContainer() + tagsString + '.' + fileExt;
-      }
-    } else {
-      // File does not have an extension
-      newFileName = fileName.substring(0, beginTagContainer) + tagsString + fileName.substring(endTagContainer + 1, fileName.length);
-    }
-    if (newFileName.length < 1) {
-      throw 'Generated filename is invalid';
-    }
-    return newFileName;
+	return fileName;
   }
 
   function renameFile(filePath, newFilePath) {
@@ -350,11 +316,12 @@ define(function(require, exports, module) {
 
   function writeTagsToFile(filePath, tags) {
     console.log('Add the tags for: ' + filePath);
-
-    if (TSCORE.Config.getWriteMetaToSidecarFile()) {
+	//CB-Edit: always use sidecarFiles! All commented-out section below are my edits.
+    //if (TSCORE.Config.getWriteMetaToSidecarFile()) {
       TSCORE.Meta.addMetaTags(filePath, tags);
       TSCORE.PerspectiveManager.updateFileUI(filePath, filePath);
-    } else {
+    /*} else {
+		//CB-Edit: uncomment this section!
       var fileName = extractFileName(filePath);
       var containingDirectoryPath = extractContainingDirectoryPath(filePath);
       var extractedTags = extractTags(filePath);
@@ -367,7 +334,7 @@ define(function(require, exports, module) {
       }
       var newFileName = generateFileName(fileName, extractedTags);
       renameFile(filePath, containingDirectoryPath + TSCORE.dirSeparator + newFileName);
-    }
+    }*/
 
     collectRecentTags(tags);
   }
@@ -375,12 +342,12 @@ define(function(require, exports, module) {
   function removeTagsFromFile(filePath, tags) {
     console.log('Remove the tags from: ' + filePath);
 
-    if (TSCORE.Config.getWriteMetaToSidecarFile()) {
+//    if (TSCORE.Config.getWriteMetaToSidecarFile()) {
       tags.forEach(function(tag) {
         TSCORE.Meta.removeMetaTag(filePath, tag);
       });
       TSCORE.PerspectiveManager.updateFileUI(filePath, filePath);
-    } else {
+  /*  } else {
       var fileName = extractFileName(filePath);
       var containingDirectoryPath = extractContainingDirectoryPath(filePath);
       var extractedTags = extractTags(filePath);
@@ -392,21 +359,23 @@ define(function(require, exports, module) {
           extractedTags.splice(tagLoc, 1);
         }
       }
+  
       var newFileName = generateFileName(fileName, extractedTags);
       renameFile(filePath, containingDirectoryPath + TSCORE.dirSeparator + newFileName);
     }
+  */
   }
 
   function cleanFileFromTags(filePath) {
     console.log('Cleaning file from tags: ' + filePath);
 
-    if (TSCORE.Config.getWriteMetaToSidecarFile()) {
+   // if (TSCORE.Config.getWriteMetaToSidecarFile()) {
       var tags = TSCORE.Meta.getTagsFromMetaFile(filePath);
       tags.forEach(function(tag) {
         TSCORE.Meta.removeMetaTag(filePath, tag.tag);
       });
       TSCORE.PerspectiveManager.updateFileUI(filePath, filePath);
-    } else {
+/*    } else {
       var fileTitle = extractTitle(filePath);
       var fileExt = extractFileExtension(filePath);
       var containingDirectoryPath = extractContainingDirectoryPath(filePath);
@@ -415,6 +384,7 @@ define(function(require, exports, module) {
       }
       renameFile(filePath, containingDirectoryPath + TSCORE.dirSeparator + fileTitle + fileExt);
     }
+ */
   }
 
   function cleanFilesFromTags(filePathArray) {
@@ -474,25 +444,10 @@ define(function(require, exports, module) {
   function renameTag(filePath, oldTag, newTag) {
     console.log('Rename tag for file: ' + filePath);
 
-    //todo Refine the logic to consider renaming tags from filename in a sidecar mode and vice versa
-    if (TSCORE.Config.getWriteMetaToSidecarFile()) {
+    //sidecar files only!
+
       TSCORE.Meta.renameMetaTag(filePath, oldTag, newTag);
       TSCORE.PerspectiveManager.updateFileUI(filePath, filePath);
-    } else {
-      var fileName = extractFileName(filePath);
-      var containingDirectoryPath = extractContainingDirectoryPath(filePath);
-      var extractedTags = extractTags(filePath);
-      for (var i = 0; i < extractedTags.length; i++) {
-        // check if tag is already in the tag array
-        if (extractedTags[i] === oldTag) {
-          extractedTags[i] = newTag.trim();
-        }
-      }
-      var newFileName = generateFileName(fileName, extractedTags);
-      if (newFileName !== fileName) {
-        renameFile(filePath, containingDirectoryPath + TSCORE.dirSeparator + newFileName);
-      }
-    }
 
     collectRecentTags([newTag]);
   }
@@ -500,13 +455,14 @@ define(function(require, exports, module) {
   function changeTitle(filePath, newTitle) {
     console.log('Changing title for file: ' + filePath);
     var containingDirectoryPath = extractContainingDirectoryPath(filePath);
-    var extractedTags = extractTags(filePath);
+
     var fileExt = extractFileExtension(filePath);
     if (fileExt.length > 0) {
       fileExt = '.' + fileExt;
     }
     // TODO generalize generateFileName to support fileTitle & fileExtension
-    var newFileName = generateFileName(newTitle, extractedTags);
+
+	  var newFileName = newTitle;
     renameFile(filePath, containingDirectoryPath + TSCORE.dirSeparator + newFileName + fileExt);
     return true;
   }

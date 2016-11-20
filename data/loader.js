@@ -22,7 +22,7 @@ var isWin = navigator.appVersion.indexOf("Win")!==-1;
 (function () {
   // the value of this var is replaced to "true" by the build script
   var PRODUCTION = "@@PRODUCTION";
-  var PRO = "@@PROVERSION";
+  var PRO = "true";
 
   // Disabling all output to console in production mode
   if (PRODUCTION == "true") {
@@ -52,8 +52,11 @@ var isWin = navigator.appVersion.indexOf("Win")!==-1;
   } catch(e) {
     console.log(e.message);
   }
-  var PRO_JS = "pro/js/pro.api";
-  if(PRO.indexOf("@@PROVERS") == 0 || PRO == "false") { PRO_JS = 'js/pro'; }
+  //CB-edit: commented out line  below, added one below it to emulate PRO version.
+  //var PRO_JS = "pro/js/pro.api"; 
+	//var PRO_JS = 'js/pro';
+	var PRO_JS = 'js/pro-cb';
+  if(PRO.indexOf("@@PROVERS") == 0 || PRO == "false") { PRO_JS = 'js/pro'; console.log("PRO=" + PRO);}
 
   // Setting up the IO functionality according to the platform
   var IO_JS = "web/web.api";

@@ -780,10 +780,15 @@ define(function(require, exports, module) {
   }
 
   function getEnableMetaData() {
+	  //CB-Edit: commented out section below; forced return true;
+	  /*
     if (exports.Settings.enableMetaData === undefined) {
       exports.Settings.enableMetaData = exports.DefaultSettings.enableMetaData;
     }
-    return exports.Settings.enableMetaData;
+    return exports.Settings.enableMetaData;*/
+	  
+	  return true;
+	
   }
 
   function setEnableMetaData(value) {
@@ -867,11 +872,17 @@ define(function(require, exports, module) {
   }
 
   function getWriteMetaToSidecarFile() {
-    if (exports.Settings.writeMetaToSidecarFile === undefined) {
+    // hack! only allow sidecar method. I don't want to change file names! force this to return true.
+	  /*
+	  if (exports.Settings.writeMetaToSidecarFile === undefined) {
+		
+		
       exports.Settings.writeMetaToSidecarFile = exports.DefaultSettings.writeMetaToSidecarFile;
       saveSettings();
     }
     return exports.Settings.writeMetaToSidecarFile;
+	*/
+	  return true;
   }
 
   function setWriteMetaToSidecarFile(value) {

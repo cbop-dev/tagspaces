@@ -156,7 +156,8 @@ define(function(require, exports, module) {
             canvas.height = maxTmbSize;
             canvas.width = (maxTmbSize * img.width) / img.height;
           }
-          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          ctx.drawImage(img, 0, 0, img.width, img.height,
+						    0, 0, canvas.width, canvas.height);
           resolve(canvas.toDataURL("image/png"));
           img = null;
           canvas = null;
@@ -315,4 +316,7 @@ define(function(require, exports, module) {
   exports.removeMetaTag = removeMetaTag;
   exports.loadFolderMetaDataPromise = loadFolderMetaDataPromise;
   exports.createMetaFolder = createMetaFolder;
+  //CB-Edit:
+  exports.generateImageThumbnail = generateImageThumbnail;
+  exports.supportedImageExtensions = supportedImageExtensions;
 });
