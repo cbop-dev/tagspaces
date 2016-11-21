@@ -250,8 +250,14 @@
   "createDirectory":"New Directory",
   "alertOpenLocatioFirst":"Please open a location first!",
   "exitApp":"Exit",
+  "closeWin":"Close Window",
   "openNewInstance":"New Application Window",
   "documentation":"Documentation",
+  "selectFile": "Please select a file first.",
+  "createNewButton": "New",
+  "createNewButtonTitle": "Opens menu for creating new documents",
+  "createNewDocument": "Create new document",
+  "geoTaggingNotPossible": "Geo Tagging not possible!",
+  "needProVersion": "You need the PRO version in order to use this functionality.",
   "-": "-"
-
 }

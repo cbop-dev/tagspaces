@@ -103,13 +103,16 @@ var isWin = navigator.appVersion.indexOf("Win")!==-1;
       hammerjs:               'libs/hammerjs/hammer.min',
       jqueryhammerjs:         'libs/jquery.hammer.js/jquery.hammer',
       handlebarsjs:           'libs/handlebars/handlebars.min',
-      pdfjs:                  'libs/pdfjs/build/pdf',
       webdavlib:              'web/webdavlib',
       jszip:                  'libs/jszip/dist/jszip.min',
       hopscotch:              'libs/hopscotch/dist/js/hopscotch.min',
       noty:                   'libs/noty/js/noty/packaged/jquery.noty.packaged.min',
       marked:                 'libs/marked/marked.min',
+      offlinelib:             'web/offlinelib/offline.min',
       webdav:                 'web/webdavlib/webdavlib',
+      moment:                 'libs/moment/min/moment.min',
+      momenttimezone:         'libs/moment-timezone/builds/moment-timezone.min',
+      datetimepicker:         'libs/eonasdan-bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min',
 
       tscore:                 'js/core.api',
       tssetting:              'js/settings.api',
@@ -133,6 +136,9 @@ var isWin = navigator.appVersion.indexOf("Win")!==-1;
       tsextmanager:           'js/extension.manager',
       tsioapi:                 IO_JS,
       tspro:                   PRO_JS,
+      tsaudiorecorderui:      'js/audiorecorder.ui',
+      tsmapui:                'js/map.ui',
+      tscalendarui:           'js/calendar.ui'
     },
     shim: {
       'underscore':               { exports: '_' },

@@ -7,6 +7,10 @@
         "message": "Launch TagSpaces",
         "description": "Title of the application launcher in the browser."
     },
+    "saveBookmarkTitle": {
+        "message": "Bookmark the page",
+        "description": "Title of bookmark button"
+    },
     "appDesc": {
         "message": "File Browser with Web Content Scraping and Chromecast Support.",
         "description": ""
@@ -27,6 +31,10 @@
         "message": "TagSpaces",
         "description": ""
     },
+    "saveBookmarkLabel": {
+        "message": "Bookmark",
+        "description": "Title of label."
+    },
     "appLauncherLabel": {
         "message": "Capture Web Content",
         "description": "Title of label."
@@ -36,7 +44,7 @@
         "description": "Title of label."
     },
     "addTagLabel": {
-        "message": "Add Tags",
+        "message": "Tilføj mærker",
         "description": "Title of label."
     },
     "saveAsMhtmlTitle": {

@@ -30,6 +30,8 @@ define(function(require, exports, module) {
   var tsExt = require('tsextapi');
   var tsExtManager = require('tsextmanager');
   var TSCORE = require('tscore');
+  //var tsAudioRecorderUI = require('tsaudiorecorderui');
+  var tsCalendarUI = require('tscalendarui');
 
   // Defining variables
   var currentPath;
@@ -168,6 +170,14 @@ define(function(require, exports, module) {
     window.addEventListener('orientationchange', reLayout);
 
     $(window).on('resize', reLayout);
+
+    applyCustomStyles();
+  }
+
+  function applyCustomStyles() {
+    var sheet = document.createElement('style');
+    sheet.innerText = ".tagButton {color: " + TSCORE.Config.getDefaultTagTextColor() + " !important; background: " + TSCORE.Config.getDefaultTagColor() + " !important;}";
+    document.body.appendChild(sheet);
   }
 
   function switchInterfaceLanguage(language) {
@@ -178,7 +188,7 @@ define(function(require, exports, module) {
           namespaces: [
             'ns.common',
             'ns.dialogs',
-            'ns.perspectiveList',
+            'ns.perspectives',
             'ns.pro',
           ]
         },
@@ -218,9 +228,16 @@ define(function(require, exports, module) {
       tsSearchUI.showSearchArea();
     });
     Mousetrap.bind(tsSettings.getRenamingFileKeyBinding(), function() {
-      if (TSCORE.selectedFiles[0]) {
-        tsCoreUI.showFileRenameDialog(TSCORE.selectedFiles[0]);
-      }
+      tsCoreUI.showFileRenameDialog(TSCORE.selectedFiles[0]);
+    });
+    Mousetrap.bind(tsSettings.getDeleteDocumentKeyBinding(), function() {
+      tsCoreUI.showDeleteFilesDialog(TSCORE.selectedFiles[0]);
+    });
+    Mousetrap.bind(tsSettings.getOpenFileKeyBinding(), function() {
+      tsFileOpener.openFile(TSCORE.selectedFiles[0]);
+    });
+    Mousetrap.bind(tsSettings.getOpenFileExternallyKeyBinding(), function() {
+      TSCORE.IO.openFile(TSCORE.selectedFiles[0]);
     });
   }
 
@@ -295,8 +312,8 @@ define(function(require, exports, module) {
   function updateFileModel(model, oldPath, newPath) {
     console.log('Removing file from model');
     var title = tsTagUtils.extractTitle(newPath),
-            fileExt = tsTagUtils.extractFileExtension(newPath),
-            fileTags = tsTagUtils.extractTags(newPath);
+      fileExt = tsTagUtils.extractFileExtension(newPath),
+      fileTags = tsTagUtils.extractTags(newPath);
     for (var i = 0; i < model.length; i++) {
       if (model[i].path == oldPath) {
         model[i].path = newPath;
@@ -487,6 +504,7 @@ define(function(require, exports, module) {
   exports.TagUtils = tsTagUtils;
   exports.FileOpener = tsFileOpener;
   exports.Search = tsSearch;
+  exports.Calendar = tsCalendarUI;
   exports.Utils = tsUtils;
   if (tsPro.available) {
     exports.PRO = tsPro;
@@ -527,7 +545,6 @@ define(function(require, exports, module) {
   exports.showAlertDialog = tsCoreUI.showAlertDialog;
   exports.showSuccessDialog = tsCoreUI.showSuccessDialog;
   exports.showConfirmDialog = tsCoreUI.showConfirmDialog;
-  exports.showTagEditDialog = tsCoreUI.showTagEditDialog;
   exports.hideAllDropDownMenus = tsCoreUI.hideAllDropDownMenus;
   exports.showFileCreateDialog = tsCoreUI.showFileCreateDialog;
   exports.showFileRenameDialog = tsCoreUI.showFileRenameDialog;

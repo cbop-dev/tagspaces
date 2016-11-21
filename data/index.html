@@ -64,7 +64,7 @@
           </button>
           <div class="btn-group pull-right" id="sideBarButtonGroup">
             <button class="btn btn-link" id="closeLeftPanel">
-              <i class="fa fa-arrow-left fa-lg"></i>
+              <i class="fa fa-chevron-left fa-lg"></i>
             </button>
           </div>
         </div>
@@ -195,7 +195,7 @@
       <nav class="navbar navbar-default" role="navigation">
         <div class="flexLayout" style="min-height: 40px;">
           <button type="button" class="btn btn-link" id="openLeftPanel" data-i18n="[title]ns.common:toggleLeftPanelTooltip">
-            <i class="fa fa-arrow-right fa-lg"></i>
+            <i class="fa fa-chevron-right fa-lg"></i>
           </button>
           <div class="flexMaxWidth">
             <div class="flexLayout" id="alternativeNavigator"></div>
@@ -209,6 +209,30 @@
           </div>
         </div>
         <div class="flexLayout" style="min-height: 40px;">
+          <button type="button" class="btn btn-link" id="showNewFileDialog" data-toggle="dropdown" data-i18n="[title]ns.common:toggleLeftPanelTooltip">
+            <i class="fa fa-plus fa-lg"></i>&nbsp;&nbsp;<span data-i18n="ns.common:createNewButton;[title]ns.common:createNewButtonTitle;"></span>
+          </button>
+          <ul class="dropdown-menu" id="newFileMenu" style="top: 35px; left: 5px">
+            <li class="dropdown-header">
+              <button type="button" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+              <span data-i18n="ns.common:createNewDocument"></span></li>
+            <li><a id="createTextFileButton">
+              <i class="fa fa-tag fa-fw"></i>
+              &nbsp;<span data-i18n="ns.common:createFile"></span></a></li>
+            <li><a id="createHTMLFileButton">
+              <i class="fa fa-tag fa-fw"></i>
+              &nbsp;<span data-i18n="ns.common:createRichTextFile"></span></a></li>
+            <li><a id="createMarkdownFileButton">
+              <i class="fa fa-tag fa-fw"></i>
+              &nbsp;<span data-i18n="ns.common:createMarkdown"></span></a></li>
+            <!--li><a id="createAudioFileButton">
+              <i class="fa fa-tag fa-fw"></i>
+              &nbsp;<span data-i18n="ns.common:createAudioFile"></span></a></li-->
+            <li><a id="addExistingFileButton">
+              <i class="fa fa-tag fa-fw"></i>
+              &nbsp;<span data-i18n="ns.perspectives:showAddFileDialog"></span></a></li>
+          </ul>
+
           <div class="flexMaxWidth flexLayout" style="min-width: 100px;">
             <div class="flexMaxWidth">
               <div id="statusBar" class="noWrap"></div>
@@ -295,10 +319,11 @@
               <li class="noWrap"><a id="openDirectory" data-i18n="[title]ns.common:openContainingFolderTooltip">
                 <i class="fa fa-folder-open fa-fw"></i>
                 &nbsp;<span data-i18n="ns.common:openContainingFolder"></span></a></li>
-              <li class="noWrap"><a id="closeFile" data-i18n="[title]ns.common:closeFileTooltip">
+              <!--li class="noWrap"><a id="closeFile" data-i18n="[title]ns.common:closeFileTooltip">
                 <i class="fa fa-times fa-fw"></i>
                 &nbsp;<span data-i18n="ns.common:closeFile"></span>
-                <span class="pull-right label label-default keyShortcut">Esc</span></a></li>
+                <span class="pull-right label label-default keyShortcut">Esc</span></a></li-->
+              <li class="divider"></li>
               <li class="noWrap"><a id="openProperties" data-i18n="[title]ns.common:filePropertiesTooltip">
                 <i class="fa fa-briefcase fa-fw"></i>
                 &nbsp;<span data-i18n="ns.common:fileProperties"></span>
@@ -318,13 +343,13 @@
             <i class="fa fa-plus-square"></i>
           </button>
           <ul class="dropdown-menu" id="tagSuggestionsMenu"></ul>
-          <span id="fileTags" class="flexMaxWidth" style="width: 100%"></span>
-          <div id="fileViewerMainToolbar" class="btn-group" style="margin-top: -8px; min-width: 190px;">
+          <span id="fileTags" class="flexMaxWidth"></span>
+          <div id="fileViewerMainToolbar" class="btn-group">
             <button class="btn btn-link pull-right" data-i18n="[title]ns.common:openNextFileTooltip" id="nextFileButton">
-              <i class="fa fa-chevron-right fa-lg"></i>
+              <i class="fa fa-arrow-right fa-lg"></i>
             </button>
             <button class="btn btn-link pull-right" data-i18n="[title]ns.common:openPrevFileTooltip" id="prevFileButton">
-              <i class="fa fa-chevron-left fa-lg"></i>
+              <i class="fa fa-arrow-left fa-lg"></i>
             </button>
             <button class="btn btn-link pull-right" data-i18n="[title]ns.common:toggleFullWidthTooltip" id="toggleFullWidthButton">
               <i class="fa fa-expand fa-lg"></i>
@@ -353,11 +378,13 @@
         <h4 class="modal-title" id="myModalLabel1" data-i18n="ns.dialogs:aboutTitle"></h4>
       </div>
       <div class="modal-body">
-        <iframe id="aboutIframe" sandbox="allow-same-origin allow-scripts" nwdisable style="width: 100%; height: 100%; min-height: 350px; border: 0;" src="about.html"></iframe>
+        <iframe id="aboutIframe" sandbox="allow-same-origin allow-scripts" nwdisable style="width: 100%; height: 100%; min-height: 350px; border: 0;"></iframe>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-default pull-left" id="aboutDialogBack" title="Go Back"><i class="fa fa-arrow-left fa-lg"></i></button>
-        <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true"><i class="fa fa-check fa-lg"></i></button>
+        <button class="btn btn-default pull-left" id="aboutDialogBack" title="Go Back">
+          <i class="fa fa-arrow-left fa-lg"></i><span data-i18n="ns.common:prev"></span>
+        </button>
+        <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true"><span data-i18n="ns.dialogs:ok"></span></button>
       </div>
     </div>
   </div>
@@ -394,6 +421,18 @@
           <div class='form-group'>
             <label class="col-sm-4 control-label" data-i18n="ns.dialogs:selectAllFiles"></label>
             <div class="col-sm-7"><span class="shortcutKey" id='selectAllKeyBindingHelp'></span></div>
+          </div>
+          <div class='form-group'>
+            <label class="col-sm-4 control-label" data-i18n="ns.dialogs:openFileKeyBinding"></label>
+            <div class="col-sm-7"><span class="shortcutKey" id='openFileKeyBindingHelp'></span></div>
+          </div>
+          <div class='form-group'>
+            <label class="col-sm-4 control-label" data-i18n="ns.dialogs:openFileExternallyKeyBinding"></label>
+            <div class="col-sm-7"><span class="shortcutKey" id='openFileExternallyKeyBindingHelp'></span></div>
+          </div>
+          <div class='form-group'>
+            <label class="col-sm-4 control-label" data-i18n="ns.dialogs:deleteDocumentKeyBinding"></label>
+            <div class="col-sm-7"><span class="shortcutKey" id='deleteDocumentKeyBindingHelp'></span></div>
           </div>
           <div class='form-group'>
             <label class="col-sm-4 control-label" data-i18n="ns.dialogs:reloadDocumentKeyBinding"></label>
@@ -438,7 +477,9 @@
         </form>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true"><i class="fa fa-check fa-lg"></i></button>
+        <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true">
+          <span data-i18n="ns.dialogs:ok"></span>
+        </button>
       </div>
     </div>
   </div>
@@ -454,17 +495,15 @@
       </div>
       <div class="modal-body">
         <div class="form-horizontal">
-          <!-- Start: Only for Development process -->
-          <div class="form-group">
+          <!--div class="form-group">
             <label class="col-sm-3 control-label" data-i18n="ns.dialogs:audioInput"></label>
             <div class="col-sm-2 top-align-5" data-i18n="ns.dialogs:testTone"></div>
             <div class="col-sm-3">
               <input class="top-align-5" id="testToneLevel" type="range" min="0" max="100" value="0">
             </div>
-          </div>
-          <!-- END: Only for Development process -->
+          </div-->
           <div class="form-group">
-            <label class="col-sm-3 control-label" data-i18n="ns.dialogs:microphone"></label>
+            <label class="col-sm-3 control-label" data-i18n="ns.dialogs:microphone">Enable microphone</label>
             <div class="col-sm-2 top-align-5">
               <input id="microphone" type="checkbox">
             </div>
@@ -476,7 +515,7 @@
           <div class="form-group">
             <label class="col-sm-3 control-label" data-i18n="ns.dialogs:encoding"></label>
             <div class="col-sm-3 top-align-5">
-              <input type="radio" name="encoding" encoding="wav" checked="" ><span>wav</span><br>
+              <input type="radio" name="encoding" encoding="wav" checked ><span>wav</span><br>
               <input type="radio" name="encoding" encoding="ogg"><span>ogg</span>
             </div>
            <label id="encoding-option-label" class="col-sm-2 control-label"></label>
@@ -490,7 +529,7 @@
             <div class="col-sm-3 control-label"><span id="recording" class="text-danger hidden"><strong
                     data-i18n="ns.dialogs:recording"></strong></span>&nbsp; <span id="time-display"></span></div>
             <div class="col-sm-4">
-              <button id="record" class="btn btn-danger" data-i18n="ns.dialogs:record"></button>
+              <button id="record" class="btn btn-danger" data-i18n="ns.dialogs:record">Record</button>
               <button id="cancel" class="btn btn-default hidden" data-i18n="ns.dialogs:cancel"></button>
             </div>
             <div class="col-sm-5"><span id="date-time" class="text-info"></span></div>
@@ -515,12 +554,15 @@
               <p class="help-block" data-i18n="ns.dialogs:editTagNamesRestrictionsHelp"></p>
             </div>
           </form>
-          <button id="audioRecordingConfirmButton" class='btn btn-primary' data-i18n="ns.dialogs:save" data-dismiss="modal" aria-hidden="true"></button>
-          <button id="deleteAudioRecording" class='btn btn-default' recording='' data-i18n="ns.dialogs:delete"></button>
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true"><i class="fa fa-check fa-lg"></i></button>
+        <button class="btn btn-default pull-left" data-dismiss="modal" aria-hidden="true">
+          <span data-i18n="ns.dialogs:cancel"></span>
+        </button>
+        <button id="audioRecordingConfirmButton" class='btn btn-primary pull-right' data-dismiss="modal" aria-hidden="true">
+          <span data-i18n="ns.common:saveFile"></span>
+        </button>
       </div>
     </div>
   </div>
@@ -534,11 +576,14 @@
         <h4 class="modal-title" data-i18n="ns.common:license"></h4>
       </div>
       <div class="modal-body">
-        <iframe id="eulaIframe" sandbox="allow-same-origin allow-scripts" nwdisable style="width: 100%; height: 100%; min-height: 350px; border: 0;" src="LICENSE.txt"></iframe>
+        <iframe id="eulaIframe" sandbox="allow-same-origin allow-scripts" nwdisable style="width: 100%; height: 100%; min-height: 350px; border: 0;"></iframe>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-default pull-left" id="eulaDialogBack" title="Go Back"><i class="fa fa-arrow-left fa-lg"></i></button>
-        <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true"><i class="fa fa-check fa-lg"></i>
+        <button class="btn btn-default pull-left" id="eulaDialogBack" title="Go Back">
+          <span data-i18n="ns.dialogs:cancel"></span>
+        </button>
+        <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true">
+          <span data-i18n="ns.dialogs:ok"></span>
         </button>
       </div>
     </div>
@@ -593,10 +638,12 @@
         </form>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-default pull-left cancelButton" data-dismiss="modal" aria-hidden="true"><i class="fa fa-times fa-lg"></i>
+        <button class="btn btn-default pull-left cancelButton" data-dismiss="modal" aria-hidden="true">
+          <span data-i18n="ns.dialogs:cancel"></span>
         </button>
-        <button id="fileCreateConfirmButton" class="btn btn-primary" data-dismiss="modal" aria-hidden="true"><i
-          class="fa fa-check fa-lg"></i></button>
+        <button id="fileCreateConfirmButton" class="btn btn-primary" data-dismiss="modal" aria-hidden="true">
+          <span data-i18n="ns.dialogs:ok"></span>
+        </button>
       </div>
     </div>
   </div>
@@ -616,17 +663,16 @@
             <input class="form-control" pattern='^([^#/\\:*?<>|"]){1,}$' type="text" name="renamedFileName"
                    id="renamedFileName"
                    data-i18n="[data-error]ns.dialogs:fileNameHelp" required/>
-
             <p class="help-block with-errors"></p>
           </div>
         </form>
       </div>
       <div class="modal-footer">
         <button class="btn btn-default pull-left cancelButton" data-dismiss="modal" aria-hidden="true">
-          <i class="fa fa-times fa-lg"></i><span data-i18n="ns.dialogs:cancel"></span>
+          <span data-i18n="ns.dialogs:cancel"></span>
         </button>
         <button id="renameFileButton" class="btn btn-primary" data-dismiss="modal" aria-hidden="true">
-          <i class="fa fa-check fa-lg"></i><span data-i18n="ns.dialogs:ok"></span>
+          <span data-i18n="ns.dialogs:ok"></span>
         </button>
       </div>
     </div>
@@ -641,23 +687,71 @@
           <i class="fa fa-times"></i>
         </button>
         <h4 data-i18n="ns.dialogs:editTagTitle"></h4>
+        <div id="tabsEditTag">
+          <ul class="nav nav-tabs" style="margin-bottom: 15px; border-bottom: 1px solid lightgray;">
+            <li id="tabFormEdit"><a href="#formEditTag" data-toggle="tab" class="optionsTitle" data-i18n="ns.dialogs:generalTab"></a></li>
+            <li id="tabDateCalendar"><a href="#dateCalendarTab" data-toggle="tab" class="optionsTitle" data-i18n="ns.dialogs:dateCalendarTab"></a></li>
+            <li id="tabDateTimeCalendar"><a href="#dateTimeCalendarTab" data-toggle="tab" class="optionsTitle" data-i18n="ns.dialogs:dateTimeTab"></a></li>
+            <li id="tabDateRange"><a href="#dateRangeTab" data-toggle="tab" class="optionsTitle" data-i18n="ns.dialogs:dateRangeTab"></a></li>
+            <li id="tabGeoLocation"><a href="#geoLocation" data-toggle="tab" class="optionsTitle" data-i18n="ns.dialogs:geoLocationTab"></a></li>
+          </ul>
+        </div>
       </div>
-      <div class="modal-body form">
-        <form role="form" data-toggle="validator" id="formEditTag">
-          <div class="form-group">
-            <label class="control-label" for="newTagName" data-i18n="ns.dialogs:editTagNewName"></label>
-            <input class="form-control" pattern="^([^\ #/\\]){1,}$" type="text" name="newTagName" id="newTagName"
-                   data-i18n="[data-error]ns.dialogs:editTagNamesRestrictionsHelp" required/>
-            <p class="help-block with-errors"></p>
+      <div class="modal-body form tab-content">
+        <div class="tab-pane active" id="formEditTag"></div>
+        <div class="tab-pane" id="dateCalendarTab">
+          <div class="date-time-calendar">
+            <div class="form-group">
+              <div id="dateCalendar" data-i18n="[placeholder]ns.dialogs:dateCalendar"></div>
+            </div>
           </div>
-        </form>
+        </div>
+        <div class="tab-pane" id="dateTimeCalendarTab">
+          <div class="date-time-calendar">
+            <div class="form-group">
+              <div id="dateTimeCalendar" data-i18n="[placeholder]ns.dialogs:dateTime"></div>
+            </div>
+          </div>
+        </div>
+        <div class="tab-pane" id="dateRangeTab">
+          <div class="date-time-calendar">
+            <div class="form-group">
+                <div class="col-sm-6">
+                  <label class="col-xs-offset-5 col-sm-offset-5" data-i18n="ns.dialogs:fromDateTime"></label>
+                  <div id="dateTimeRangeCalendar" data-i18n="[placeholder]ns.dialogs:dateTimeRange"></div>
+                </div>
+                <div class="col-sm-6">
+                  <label class="col-xs-offset-5 col-sm-offset-5" data-i18n="ns.dialogs:toDateTime"></label>
+                  <div id="dateTimeRangeMaxCalendar" data-i18n="[placeholder]ns.dialogs:dateTimeRangeMax"></div>
+                </div>
+            </div>
+          </div>
+        </div>
+        <div class="tab-pane" id="geoLocation">
+          <div class="form-group">
+            <div id="mapTag" style="width: 100%; height: 350px;"></div>
+          </div>
+        </div>
+        <div class="form-group">
+          <form role="form" data-toggle="validator">
+            <div class="form-group">
+              <label class="control-label" for="newTagName" data-i18n="ns.dialogs:editTagNewName"></label>
+              <input class="form-control" type="text" name="newTagName" id="newTagName"
+                     data-i18n="[data-error]ns.dialogs:editTagNamesRestrictionsHelp" required/>
+              <p class="help-block with-errors"></p>
+            </div>
+          </form>
+        </div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-default cancelButton pull-left" data-dismiss="modal" aria-hidden="true">
-          <i class="fa fa-times fa-lg"></i><span data-i18n="ns.dialogs:cancel"></span>
+          <span data-i18n="ns.dialogs:cancel"></span>
+        </button>
+        <button id="addTagButton" class="btn btn-primary" data-dismiss="modal" aria-hidden="true">
+          <span data-i18n="ns.dialogs:tagOperationAddTag">Add Tag</span>
         </button>
         <button id="editTagButton" class="btn btn-primary" data-dismiss="modal" aria-hidden="true">
-          <i class="fa fa-check fa-lg"></i><span data-i18n="ns.dialogs:ok"></span>
+          <span data-i18n="ns.dialogs:confirmSaveButton">Save</span>
         </button>
       </div>
     </div>
@@ -683,11 +777,11 @@
           </div>
         </form>
       </div>
-      <div class="modal-footer noWrap">
+      <div class="modal-footer">
         <button id="cleanTagsButton" class="btn btn-danger pull-left" data-dismiss="modal" aria-hidden="true"
                 data-i18n="ns.dialogs:tagOperationCleanTags"></button>
         <button class="btn btn-default cancelButton" data-dismiss="modal" aria-hidden="true">
-          <i class="fa fa-times fa-lg"></i><span data-i18n="ns.dialogs:cancel"></span>
+          <span data-i18n="ns.dialogs:cancel"></span>
         </button>
         <button id="removeTagsButton" class="btn btn-warning" data-dismiss="modal" aria-hidden="true"
                 data-i18n="ns.dialogs:tagOperationRemoveTag"></button>
@@ -766,10 +860,10 @@
       </div>
       <div class="modal-footer">
         <button class="btn btn-default pull-left cancelButton" data-dismiss="modal" aria-hidden="true">
-          <i class="fa fa-times fa-lg"></i><span data-i18n="ns.dialogs:cancel"></span>
+          <span data-i18n="ns.dialogs:cancel"></span>
         </button>
-        <button id="editTagInTreeButton" class="btn btn-primary" data-dismiss="modal" aria-hidden="true"><i
-          class="fa fa-check fa-lg"></i><span data-i18n="ns.dialogs:ok"></span>
+        <button id="editTagInTreeButton" class="btn btn-primary" data-dismiss="modal" aria-hidden="true">
+          <span data-i18n="ns.dialogs:ok"></span>
         </button>
       </div>
     </div>
@@ -787,8 +881,7 @@
         <form role="form" data-toggle="validator" id="formAddTags">
           <div class="form-group">
             <label class="control-label" for="newTagTitle" data-i18n="ns.dialogs:addTagsToGroupTags"></label>
-            <input pattern="^([^#/\\\ ]){1,}$" class="form-control" type="text" name="newTagTitle"
-                   id="newTagTitle"
+            <input pattern="^([^#/\\ ]){1,}$" class="form-control" type="text" name="newTagTitle" id="newTagTitle"
                    data-i18n="[placeholder]ns.dialogs:addTagsToGroupTagsPlaceholder;[data-error]ns.dialogs:editTagNamesRestrictionsHelp"/>
             <p class="help-block with-errors"></p>
           </div>
@@ -796,10 +889,10 @@
       </div>
       <div class="modal-footer">
         <button class="btn btn-default pull-left cancelButton" data-dismiss="modal" aria-hidden="true">
-          <i class="fa fa-times fa-lg"></i><span data-i18n="ns.dialogs:cancel"></span>
+          <span data-i18n="ns.dialogs:cancel"></span>
         </button>
-        <button id="createTagButton" class="btn btn-primary" data-dismiss="modal" aria-hidden="true"><i
-          class="fa fa-check fa-lg"></i><span data-i18n="ns.dialogs:ok"></span>
+        <button id="createTagButton" class="btn btn-primary" data-dismiss="modal" aria-hidden="true">
+          <span data-i18n="ns.dialogs:ok"></span>
         </button>
       </div>
     </div>
@@ -822,14 +915,63 @@
                    pattern='^([^"]){1,}$' data-i18n="[data-error]ns.dialogs:tagGroupNameHelp" required/>
             <p class="help-block with-errors"></p>
           </div>
+          <div class="form-group">
+            <label class="control-label" for="editTagGroupBackgroundColor" data-i18n="ns.dialogs:tagBackgroundColor"></label>
+            <input type="color" class="form-control" id="editTagGroupBackgroundColor" style="padding: 0">
+            <select class="form-control" id="editTagGroupBackgroundColorChooser">
+              <option value="#ffffff">#ffffff</option>
+              <option value="#000000">#000000</option>
+              <option value="#ac725e">#ac725e</option>
+              <option value="#d06b64">#d06b64</option>
+              <option value="#f83a22">#f83a22</option>
+              <option value="#fa573c">#fa573c</option>
+              <option value="#ff7537">#ff7537</option>
+              <option value="#ffad46">#ffad46</option>
+              <option value="#42d692">#42d692</option>
+              <option value="#008000">#008000</option>
+              <option value="#7bd148">#7bd148</option>
+              <option value="#fad165">#fad165</option>
+              <option value="#FFCC24">#FFCC24</option>
+              <option value="#92e1c0">#92e1c0</option>
+              <option value="#9fe1e7">#9fe1e7</option>
+              <option value="#9fc6e7">#9fc6e7</option>
+              <option value="#4986e7">#4986e7</option>
+              <option value="#9a9cff">#9a9cff</option>
+              <option value="#b99aff">#b99aff</option>
+              <option value="#c2c2c2">#c2c2c2</option>
+              <option value="#cabdbf">#cabdbf</option>
+              <option value="#cca6ac">#cca6ac</option>
+              <option value="#f691b2">#f691b2</option>
+              <option value="#cd74e6">#cd74e6</option>
+              <option value="#a47ae2">#a47ae2</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="control-label" for="editTagGroupForegroundColor" data-i18n="ns.dialogs:tagForegroundColor"></label>
+            <input type="color" class="form-control" id="editTagGroupForegroundColor" style="padding: 0">
+            <select class="form-control" id="editTagGroupForegroundColorChooser">
+              <option value="#ffffff">#ffffff</option>
+              <option value="#cccccc">#cccccc</option>
+              <option value="#333333">#333333</option>
+              <option value="#000000">#000000</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <div class="checkbox">
+              <label for="colorChangesToAllTags">
+                <input type="checkbox" id="colorChangesToAllTags">
+                <span data-i18n="ns.dialogs:colorChangesToAllTags"></span>
+              </label>
+            </div>
+          </div>
         </form>
       </div>
       <div class="modal-footer">
         <button class="btn btn-default pull-left cancelButton" data-dismiss="modal" aria-hidden="true">
-          <i class="fa fa-times fa-lg"></i><span data-i18n="ns.dialogs:cancel"></span>
+          <span data-i18n="ns.dialogs:cancel"></span>
         </button>
-        <button id="editTagGroupButton" class="btn btn-primary" data-dismiss="modal" aria-hidden="true"><i
-          class="fa fa-check fa-lg"></i><span data-i18n="ns.dialogs:ok"></span>
+        <button id="editTagGroupButton" class="btn btn-primary" data-dismiss="modal" aria-hidden="true">
+          <span data-i18n="ns.dialogs:ok"></span>
         </button>
       </div>
     </div>
@@ -851,14 +993,55 @@
                    pattern='^([^"]){1,}$' data-i18n="[data-error]ns.dialogs:tagGroupNameHelp" required/>
             <p class="help-block with-errors"></p>
           </div>
+          <div class="form-group">
+            <label class="control-label" for="tagGroupBackgroundColor" data-i18n="ns.dialogs:tagBackgroundColor"></label>
+            <input type="color" class="form-control" id="tagGroupBackgroundColor" style="padding: 0">
+            <select class="form-control" id="tagGroupBackgroundColorChooser">
+              <option value="#ffffff">#ffffff</option>
+              <option value="#000000">#000000</option>
+              <option value="#ac725e">#ac725e</option>
+              <option value="#d06b64">#d06b64</option>
+              <option value="#f83a22">#f83a22</option>
+              <option value="#fa573c">#fa573c</option>
+              <option value="#ff7537">#ff7537</option>
+              <option value="#ffad46">#ffad46</option>
+              <option value="#42d692">#42d692</option>
+              <option value="#008000">#008000</option>
+              <option value="#7bd148">#7bd148</option>
+              <option value="#fad165">#fad165</option>
+              <option value="#FFCC24">#FFCC24</option>
+              <option value="#92e1c0">#92e1c0</option>
+              <option value="#9fe1e7">#9fe1e7</option>
+              <option value="#9fc6e7">#9fc6e7</option>
+              <option value="#4986e7">#4986e7</option>
+              <option value="#9a9cff">#9a9cff</option>
+              <option value="#b99aff">#b99aff</option>
+              <option value="#c2c2c2">#c2c2c2</option>
+              <option value="#cabdbf">#cabdbf</option>
+              <option value="#cca6ac">#cca6ac</option>
+              <option value="#f691b2">#f691b2</option>
+              <option value="#cd74e6">#cd74e6</option>
+              <option value="#a47ae2">#a47ae2</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="control-label" for="tagGroupForegroundColor" data-i18n="ns.dialogs:tagForegroundColor"></label>
+            <input type="color" class="form-control" id="tagGroupForegroundColor" style="padding: 0">
+            <select class="form-control" id="tagGroupForegroundColorChooser">
+              <option value="#ffffff">#ffffff</option>
+              <option value="#cccccc">#cccccc</option>
+              <option value="#333333">#333333</option>
+              <option value="#000000">#000000</option>
+            </select>
+          </div>
         </form>
       </div>
       <div class="modal-footer">
         <button class="btn btn-default pull-left cancelButton" data-dismiss="modal" aria-hidden="true">
-          <i class="fa fa-times fa-lg"></i><span data-i18n="ns.dialogs:cancel"></span>
+          <span data-i18n="ns.dialogs:cancel"></span>
         </button>
         <button id="createTagGroupButton" class="btn btn-primary" data-dismiss="modal" aria-hidden="true">
-          <i class="fa fa-check fa-lg"></i><span data-i18n="ns.dialogs:ok"></span>
+          <span data-i18n="ns.dialogs:ok"></span>
         </button>
       </div>
     </div>

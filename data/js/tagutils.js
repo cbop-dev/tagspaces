@@ -201,12 +201,12 @@ define(function(require, exports, module) {
       if (cSecond.length === 1) {
         cSecond = '0' + cSecond;
       }
-      time = '-' + cHour + '' + cMinute + '' + cSecond;
+      time = '~' + cHour + '' + cMinute + '' + cSecond;
     }
 
     var milliseconds = '';
     if (includeMS) {
-      milliseconds = '-' + d.getMilliseconds();
+      milliseconds = '~' + d.getMilliseconds();
     }
     return cYear + '' + cMonth + '' + cDate + time + milliseconds;
   }
@@ -373,6 +373,20 @@ define(function(require, exports, module) {
 
   function addTag(filePathArray, tagArray) {
     console.log('Adding tags to files');
+    tagArray.forEach(function(value, index) {
+      if (value === 'geo-tag') {
+        tagArray.splice(index, 1);
+        if (TSCORE.PRO) {
+          //TSCORE.selectedTag = value;
+          //TSCORE.UI.showTagEditDialog();
+        } else {
+          TSCORE.showAlertDialog($.i18n.t("ns.common:needProVersion"), $.i18n.t("ns.common:geoTaggingNotPossible"));
+        }
+      }
+    });
+    if (tagArray.length < 1) {
+      return;
+    }
     for (var i = 0; i < filePathArray.length; i++) {
       writeTagsToFile(filePathArray[i], tagArray);
     }
@@ -470,7 +484,7 @@ define(function(require, exports, module) {
   }
 
   //Collect recent tags in a custom tag-group
-  function collectRecentTags (newTags) {
+  function collectRecentTags(newTags) {
     var collectGroupKey = 'COL';
     var collectGroup = TSCORE.Config.getTagGroupData(collectGroupKey);
     if (!collectGroup) {

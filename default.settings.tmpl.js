@@ -32,6 +32,7 @@ define(function (require, exports, module) {
         "lastOpenedLocation":       "", // "/owncloud/remote.php/webdav/Demo",
         "useDefaultLocation":       false,
         "coloredFileExtensionsEnabled": true,
+        "showTagAreaOnStartup":     false,
         "writeMetaToSidecarFile":   false,
         "enableMetaData":           false,
         "webDavPath"  :             "oc/remote.php/webdav",
@@ -45,7 +46,13 @@ define(function (require, exports, module) {
         "useOCR":                   false,
         "useTextExtraction":        false,
         "useGenerateThumbnails":    false,
+        "defaultThumbnailSize":     "400",
+        "availableThumbnailSizes":  [ "100", "200", "400", "600", "1000"],
+        "defaultThumbnailFormat":   "png",
+        "availableThumbnailFormat": ["png", "jpeg"],
         "watchCurrentDirectory":    false,
+        "defaultTagTextColor":     "#ffffff",
+        "defaultTagColor":         "#008000",
         "supportedLanguages": [
             { "iso": "en_US", "title": "English" },
             { "iso": "de_DE", "title": "Deutsch (German)" },
@@ -93,7 +100,9 @@ define(function (require, exports, module) {
             "reloadApplication": "r a",
             "toggleFullScreen": "f11",
             "openDevTools": "f12",
-            "openSearch": "mod+f"
+            "openSearch": "mod+f",
+            "openFile": "enter",
+            "openFileExternally": "ctrl+enter"
         },
         "supportedFileTypes": [
             { "type": "jpg", "viewer": "viewerImage", "editor": "false" },
@@ -109,8 +118,9 @@ define(function (require, exports, module) {
             { "type": "html", "viewer": "viewerHTML", "editor": "editorHTML" },
             { "type": "htm", "viewer": "viewerHTML", "editor": "editorHTML" },
             { "type": "xhtml", "viewer": "viewerHTML", "editor": "editorText" },
-            { "type": "mht", "viewer": "@@MHTVIEWER", "editor": "false" },
-            { "type": "mhtml", "viewer": "@@MHTVIEWER", "editor": "false" },
+            { "type": "eml", "viewer": "viewerMHTML", "editor": "false" },
+            { "type": "mht", "viewer": "viewerMHTML", "editor": "false" },
+            { "type": "mhtml", "viewer": "viewerMHTML", "editor": "false" },
             { "type": "odt", "viewer": "editorODF", "editor": "false" },
             { "type": "ods", "viewer": "editorODF", "editor": "false" },
             { "type": "odp", "viewer": "editorODF", "editor": "false" },
@@ -250,6 +260,14 @@ define(function (require, exports, module) {
                         "title":         "year",
                         "functionality": "currentYear",
                         "desciption":    "Adds the current year as tag",
+                        "color":         "#4986e7",
+                        "textcolor":     "#ffffff"
+                    },
+                    {
+                        "type":          "smart",
+                        "title":         "geo-tag",
+                        "functionality": "geoTagging",
+                        "desciption":    "Add geo coordinates as a tag",
                         "color":         "#4986e7",
                         "textcolor":     "#ffffff"
                     }

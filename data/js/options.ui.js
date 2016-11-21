@@ -75,7 +75,32 @@ define(function(require, exports, module) {
     $('#useGenerateThumbnails').attr('disabled', !isMetaEnabled);
   }
 
+
   function initUI() {
+    var defaultTagColor = TSCORE.Config.getDefaultTagColor();
+    var defaultTagTextColor = TSCORE.Config.getDefaultTagTextColor();
+
+    var $tagsBackgroundColorChooser = $('#tagsBackgroundColorChooser');
+    var $tagsBackgroundColor = $('#tagsBackgroundColor');
+    var $tagForegroundColor = $('#tagsForegroundColor');
+    $tagsBackgroundColorChooser.simplecolorpicker({
+      picker: false
+    });
+    $tagsBackgroundColorChooser.on('change', function() {
+      $tagsBackgroundColor.val($tagsBackgroundColorChooser.val());
+    });
+    $tagsBackgroundColor.val(defaultTagColor);
+
+    var $tagForegroundColorChooser = $('#tagForegroundColorChooser');
+    $tagForegroundColorChooser.simplecolorpicker({
+      picker: false
+    });
+    $tagForegroundColorChooser.on('change', function() {
+      $tagForegroundColor.val($tagForegroundColorChooser.val());
+    });
+    $tagForegroundColor.val(defaultTagTextColor);
+
+
     $('#addFileTypeButton').click(function(e) {
       // Fixes reloading of the application by click
       e.preventDefault();
@@ -97,10 +122,10 @@ define(function(require, exports, module) {
     });
     $('#defaultSettingsButton').click(function() {
       TSCORE.showConfirmDialog(
-              $.i18n.t('ns.dialogs:restoreDefaulSettingTitleConfirm'),
-              $.i18n.t('ns.dialogs:restoreDefaulSettingMessageConfirm'), function() {
-                TSCORE.Config.loadDefaultSettings();
-              });
+        $.i18n.t('ns.dialogs:restoreDefaulSettingTitleConfirm'),
+        $.i18n.t('ns.dialogs:restoreDefaulSettingMessageConfirm'), function() {
+          TSCORE.Config.loadDefaultSettings();
+        });
     });
     $('#keyBindingInstructions').toggle();
     $('#keyBindingInstructionsToggle').on('click', function() {
@@ -126,10 +151,10 @@ define(function(require, exports, module) {
 
   function exportTagGroups() {
     var jsonFormat = '{ "appName": "' + TSCORE.Config.DefaultSettings.appName +
-            '", "appVersion": "' + TSCORE.Config.DefaultSettings.appVersion +
-            '", "appBuild": "' + TSCORE.Config.DefaultSettings.appBuild +
-            '", "settingsVersion": ' + TSCORE.Config.DefaultSettings.settingsVersion +
-            ', "tagGroups": ';
+      '", "appVersion": "' + TSCORE.Config.DefaultSettings.appVersion +
+      '", "appBuild": "' + TSCORE.Config.DefaultSettings.appBuild +
+      '", "settingsVersion": ' + TSCORE.Config.DefaultSettings.settingsVersion +
+      ', "tagGroups": ';
     var blob = new Blob([jsonFormat + JSON.stringify(TSCORE.Config.getAllTagGroupData()) + '}'], {
       type: 'application/json'
     });
@@ -161,6 +186,9 @@ define(function(require, exports, module) {
     $('#renamingFileKeyBinding').val(TSCORE.Config.getRenamingFileKeyBinding());
     $('#selectAllKeyBinding').val(TSCORE.Config.getSelectAllKeyBinding());
     $('#showSearchKeyBinding').val(TSCORE.Config.getSearchKeyBinding());
+    $('#deleteDocumentKeyBinding').val(TSCORE.Config.getDeleteDocumentKeyBinding());
+    $('#openFileKeyBinding').val(TSCORE.Config.getOpenFileKeyBinding());
+    $('#openFileExternallyKeyBinding').val(TSCORE.Config.getOpenFileExternallyKeyBinding());
     $('#perspectiveList').empty();
     $('#writeMetaToSidecarFile').attr('checked', TSCORE.Config.getWriteMetaToSidecarFile());
 	//CB-Edit: added line:
@@ -168,6 +196,7 @@ define(function(require, exports, module) {
 	  
     $('#useDefaultLocationCheckbox').attr('checked', TSCORE.Config.getUseDefaultLocation());
     $('#coloredFileExtensionsEnabledCheckbox').attr('checked', TSCORE.Config.getColoredFileExtensionsEnabled());
+    $('#showTagAreaOnStartupCheckbox').attr('checked', TSCORE.Config.getShowTagAreaOnStartup());
     if (TSCORE.PRO) {
       $('#enableMetaData').attr('checked', TSCORE.Config.getEnableMetaData());
 		//CB-Edit:
@@ -176,6 +205,8 @@ define(function(require, exports, module) {
       $('#useOCR').attr('checked', TSCORE.Config.getUseOCR());
       $('#useTextExtraction').attr('checked', TSCORE.Config.getUseTextExtraction());
       $('#useGenerateThumbnails').attr('checked', TSCORE.Config.getUseGenerateThumbnails());
+      $('#defaultThumbnailSize').val(TSCORE.Config.getDefaultThumbnailSize());
+      $('#defaultThumbnailFormat').val(TSCORE.Config.getDefaultThumbnailFormat());
       enableMetaData();
     }
 
@@ -188,6 +219,27 @@ define(function(require, exports, module) {
         $languagesDropdown.append($('<option>').text(value.title).val(value.iso));
       }
     });
+
+    var $thumbnailsizeDropdown = $('#defaultThumbnailSize');
+    $thumbnailsizeDropdown.empty();
+    TSCORE.Config.getAvailableThumbnailSizes().forEach(function(value) {
+      if (TSCORE.Config.getDefaultThumbnailSize() === value) {
+        $thumbnailsizeDropdown.append($('<option>').attr('selected', 'selected').text(value + "px").val(value));
+      } else {
+        $thumbnailsizeDropdown.append($('<option>').text(value + "px").val(value));
+      }
+    });
+
+    var $thumbnailformatDropdown = $('#defaultThumbnailFormat');
+    $thumbnailformatDropdown.empty();
+    TSCORE.Config.getAvailableThumbnailFormat().forEach(function(value) {
+      if (TSCORE.Config.getDefaultThumbnailFormat() === value) {
+        $thumbnailformatDropdown.append($('<option>').attr('selected', 'selected').text(value).val(value));
+      } else {
+        $thumbnailformatDropdown.append($('<option>').text(value).val(value));
+      }
+    });
+
     $('#fileTypesList').empty();
 
     TSCORE.Config.getActivatedPerspectives().forEach(function(value) {
@@ -246,12 +298,20 @@ define(function(require, exports, module) {
     TSCORE.Config.setSearchKeyBinding(parseKeyBinding($('#showSearchKeyBinding').val()));
     TSCORE.Config.setSelectAllKeyBinding(parseKeyBinding($('#selectAllKeyBinding').val()));
     TSCORE.Config.setRenamingFileKeyBinding(parseKeyBinding($('#renamingFileKeyBinding').val()));
+    TSCORE.Config.setDeleteDocumentKeyBinding(parseKeyBinding($('#deleteDocumentKeyBinding').val()));
+    TSCORE.Config.setOpenFileKeyBinding(parseKeyBinding($('#openFileKeyBinding').val()));
+    TSCORE.Config.setOpenFileExternallyKeyBinding(parseKeyBinding($('#openFileExternallyKeyBinding').val()));
+    TSCORE.Config.setDefaultTagColor($('#tagsBackgroundColor').val());
+    TSCORE.Config.setDefaultTagTextColor($('#tagsForegroundColor').val());
     if (TSCORE.PRO) {
+      //var thumbnailSize = $('#defaultThumbnailSize').val();
       TSCORE.Config.setEnableMetaData($('#enableMetaData').is(':checked'));
       TSCORE.Config.setUseTrashCan($('#useTrashCan').is(':checked'));
       TSCORE.Config.setUseOCR($('#useOCR').is(':checked'));
       TSCORE.Config.setUseTextExtraction($('#useTextExtraction').is(':checked'));
       TSCORE.Config.setUseGenerateThumbnails($('#useGenerateThumbnails').is(':checked'));
+      TSCORE.Config.setDefaultThumbnailSize($('#defaultThumbnailSize').val());
+      TSCORE.Config.setDefaultThumbnailFormat($('#defaultThumbnailFormat').val());
     }
     var interfaceLang = $('#languagesList').val();
     TSCORE.Config.setInterfaceLanguage(interfaceLang);
@@ -261,6 +321,7 @@ define(function(require, exports, module) {
     TSCORE.Config.setWriteMetaToSidecarFile($('#writeMetaToSidecarFile').is(':checked'));
     TSCORE.Config.setUseDefaultLocation($('#useDefaultLocationCheckbox').is(':checked'));
     TSCORE.Config.setColoredFileExtensionsEnabled($('#coloredFileExtensionsEnabledCheckbox').is(':checked'));
+    TSCORE.Config.setShowTagAreaOnStartup($('#showTagAreaOnStartupCheckbox').is(':checked'));
     TSCORE.Config.saveSettings();
   }
 
@@ -280,7 +341,7 @@ define(function(require, exports, module) {
     var data = [];
     $('#fileTypesList').children().each(function(index, element) {
       data.push({
-        'type': $(element).find('input').val(),
+        'type': $(element).find('input').val().trim().toLowerCase(),
         'viewer': $(element).find('.ftviewer').val(),
         'editor': $(element).find('.fteditor').val()
       });

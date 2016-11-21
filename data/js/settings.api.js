@@ -171,8 +171,26 @@ define(function(require, exports, module) {
           'viewer': 'viewerZIP',
           'editor': 'false'
         });
-        if (isCordovaAndroid) {
-          TSCORE.showAlertDialog("Due some major changes in the app, you have to manually reconnect your locations. Please excuse us for this inconvenience.");
+      }
+      if (oldBuildNumber <= 20160905130746) {
+        addFileType({
+          'type': 'eml',
+          'viewer': 'viewerMHTML',
+          'editor': 'false'
+        });
+        if (TSCORE.PRO) {
+          exports.Settings.tagGroups.forEach(function(value) {
+            if (value.key === 'SMR') {
+              value.children.push({
+                  "type":          "smart",
+                  "title":         "geo-tag",
+                  "functionality": "geoTagging",
+                  "desciption":    "Add geo coordinates as a tag",
+                  "color":         "#4986e7",
+                  "textcolor":     "#ffffff"
+              });
+            }
+          });
         }
       }
 
@@ -381,6 +399,16 @@ define(function(require, exports, module) {
     return exports.DefaultSettings.supportedLanguages;
   }
 
+  function getAvailableThumbnailSizes() {
+
+    return exports.DefaultSettings.availableThumbnailSizes;
+  }
+
+  function getAvailableThumbnailFormat() {
+
+    return exports.DefaultSettings.availableThumbnailFormat;
+  }
+
   function getCloseViewerKeyBinding() {
     updateKeyBindingsSetting();
     if (exports.Settings.keyBindings.closeViewer === undefined) {
@@ -521,6 +549,34 @@ define(function(require, exports, module) {
   function setDeleteDocumentKeyBinding(value) {
 
     exports.Settings.keyBindings.deleteDocument = value;
+  }
+
+  function getOpenFileKeyBinding() {
+    updateKeyBindingsSetting();
+    if (exports.Settings.keyBindings.openFile === undefined) {
+      exports.Settings.keyBindings.openFile = exports.DefaultSettings.keyBindings.openFile;
+      saveSettings();
+    }
+    return exports.Settings.keyBindings.openFile;
+  }
+
+  function setOpenFileKeyBinding(value) {
+
+    exports.Settings.keyBindings.openFile = value;
+  }
+
+  function getOpenFileExternallyKeyBinding() {
+    updateKeyBindingsSetting();
+    if (exports.Settings.keyBindings.openFileExternally === undefined) {
+      exports.Settings.keyBindings.openFileExternally = exports.DefaultSettings.keyBindings.openFileExternally;
+      saveSettings();
+    }
+    return exports.Settings.keyBindings.openFileExternally;
+  }
+
+  function setOpenFileExternallyKeyBinding(value) {
+
+    exports.Settings.keyBindings.openFileExternally = value;
   }
 
   function getPropertiesDocumentKeyBinding() {
@@ -768,6 +824,28 @@ define(function(require, exports, module) {
     exports.Settings.maxSearchResultCount = value;
   }
 
+  function getDefaultThumbnailSize() {
+    if (exports.Settings.defaultThumbnailSize === undefined) {
+      exports.Settings.defaultThumbnailSize = exports.DefaultSettings.defaultThumbnailSize;
+    }
+    return exports.Settings.defaultThumbnailSize;
+  }
+
+  function setDefaultThumbnailSize(value) {
+    exports.Settings.defaultThumbnailSize = value;
+  }
+
+  function getDefaultThumbnailFormat() {
+    if (exports.Settings.defaultThumbnailFormat === undefined) {
+      exports.Settings.defaultThumbnailFormat = exports.DefaultSettings.defaultThumbnailFormat;
+    }
+    return exports.Settings.defaultThumbnailFormat;
+  }
+
+  function setDefaultThumbnailFormat(value) {
+    exports.Settings.defaultThumbnailFormat = value;
+  }
+
   function getWatchCurrentDirectory() {
     if (exports.Settings.watchCurrentDirectory === undefined) {
       exports.Settings.watchCurrentDirectory = exports.DefaultSettings.watchCurrentDirectory;
@@ -902,6 +980,7 @@ define(function(require, exports, module) {
 
     exports.Settings.useDefaultLocation = value;
   }
+
   function getColoredFileExtensionsEnabled() {
     if (exports.Settings.coloredFileExtensionsEnabled === undefined) {
       exports.Settings.coloredFileExtensionsEnabled = exports.DefaultSettings.coloredFileExtensionsEnabled;
@@ -913,6 +992,42 @@ define(function(require, exports, module) {
   function setColoredFileExtensionsEnabled(value) {
 
     exports.Settings.coloredFileExtensionsEnabled = value;
+  }
+  function getShowTagAreaOnStartup() {
+    if (exports.Settings.showTagAreaOnStartup === undefined) {
+      exports.Settings.showTagAreaOnStartup = exports.DefaultSettings.showTagAreaOnStartup;
+      saveSettings();
+    }
+    return exports.Settings.showTagAreaOnStartup;
+  }
+
+  function setShowTagAreaOnStartup(value) {
+
+    exports.Settings.showTagAreaOnStartup = value;
+  }
+
+  function getDefaultTagColor() {
+    if (exports.Settings.defaultTagColor === undefined) {
+      exports.Settings.defaultTagColor = exports.DefaultSettings.defaultTagColor;
+      saveSettings();
+    }
+    return exports.Settings.defaultTagColor;
+  }
+
+  function setDefaultTagColor(value) {
+    exports.Settings.defaultTagColor = value;
+  }
+
+  function getDefaultTagTextColor() {
+    if (exports.Settings.defaultTagTextColor === undefined) {
+      exports.Settings.defaultTagTextColor = exports.DefaultSettings.defaultTagTextColor;
+      saveSettings();
+    }
+    return exports.Settings.defaultTagTextColor;
+  }
+
+  function setDefaultTagTextColor(value) {
+    exports.Settings.defaultTagTextColor = value;
   }
 
   //////////////////// API methods ///////////////////
@@ -1051,8 +1166,13 @@ define(function(require, exports, module) {
         if (!tagExistsInGroup && newTagName.length >= 1) {
           var newTagModel = JSON.parse(JSON.stringify(tagTemplate));
           newTagModel.title = newTagName;
-          newTagModel.color = newTagColor;
-          newTagModel.textcolor = newTagTextColor;
+          if (newTagColor !== undefined || newTagTextColor !== undefined) {
+            newTagModel.color = newTagColor;
+            newTagModel.textcolor = newTagTextColor;
+          } else {
+            newTagModel.color = value.color !== undefined ? value.color : getDefaultTagColor();
+            newTagModel.textcolor = value.textcolor !== undefined ? value.textcolor : getDefaultTagTextColor();
+          }
           value.children.push(newTagModel);
         } else {
           console.log('Tag with the same name already exist in this group or tag length is not correct');
@@ -1063,10 +1183,18 @@ define(function(require, exports, module) {
     return true;
   }
 
-  function editTagGroup(tagData, tagGroupName) {
+  function editTagGroup(tagData, tagGroupName, tagGroupColor, tagGroupTextColor, propagateColorToTags) {
     for (var i = 0; i < exports.Settings.tagGroups.length; i++) {
       if (exports.Settings.tagGroups[i].key === tagData.key) {
         exports.Settings.tagGroups[i].title = tagGroupName;
+        exports.Settings.tagGroups[i].color = tagGroupColor;
+        exports.Settings.tagGroups[i].textcolor = tagGroupTextColor;
+        if (propagateColorToTags) {
+          for (var j = 0; j < exports.Settings.tagGroups[i].children.length; j++) {
+            exports.Settings.tagGroups[i].children[j].color = tagGroupColor;
+            exports.Settings.tagGroups[i].children[j].textcolor = tagGroupTextColor;
+          }
+        }
         break;
       }
     }
@@ -1100,9 +1228,11 @@ define(function(require, exports, module) {
     saveSettings();
   }
 
-  function createTagGroup(tagData, tagGroupName) {
+  function createTagGroup(tagData, tagGroupName, tagGroupColor, tagGroupTextColor) {
     var newTagGroupModel = JSON.parse(JSON.stringify(tagGroupTemplate));
     newTagGroupModel.title = tagGroupName;
+    newTagGroupModel.color = tagGroupColor;
+    newTagGroupModel.textcolor = tagGroupTextColor;
     //newTagGroupModel.children = [];
     newTagGroupModel.key = '' + TSCORE.Utils.getRandomInt(10000, 99999);
     console.log('Creating taggroup: ' + JSON.stringify(newTagGroupModel) + ' with key: ' + newTagGroupModel.key);
@@ -1349,6 +1479,10 @@ define(function(require, exports, module) {
   exports.setRenamingFileKeyBinding = setRenamingFileKeyBinding;
   exports.getDeleteDocumentKeyBinding = getDeleteDocumentKeyBinding;
   exports.setDeleteDocumentKeyBinding = setDeleteDocumentKeyBinding;
+  exports.getOpenFileKeyBinding = getOpenFileKeyBinding;
+  exports.setOpenFileKeyBinding = setOpenFileKeyBinding;
+  exports.getOpenFileExternallyKeyBinding = getOpenFileExternallyKeyBinding;
+  exports.setOpenFileExternallyKeyBinding = setOpenFileExternallyKeyBinding;
   exports.getPropertiesDocumentKeyBinding = getPropertiesDocumentKeyBinding;
   exports.setPropertiesDocumentKeyBinding = setPropertiesDocumentKeyBinding;
   exports.getNextDocumentKeyBinding = getNextDocumentKeyBinding;
@@ -1409,4 +1543,16 @@ define(function(require, exports, module) {
   exports.setUseDefaultLocation = setUseDefaultLocation;
   exports.getColoredFileExtensionsEnabled = getColoredFileExtensionsEnabled;
   exports.setColoredFileExtensionsEnabled = setColoredFileExtensionsEnabled;
+  exports.getShowTagAreaOnStartup = getShowTagAreaOnStartup;
+  exports.setShowTagAreaOnStartup = setShowTagAreaOnStartup;
+  exports.getDefaultThumbnailSize = getDefaultThumbnailSize;
+  exports.setDefaultThumbnailSize = setDefaultThumbnailSize;
+  exports.getDefaultThumbnailFormat = getDefaultThumbnailFormat;
+  exports.setDefaultThumbnailFormat = setDefaultThumbnailFormat;
+  exports.getAvailableThumbnailSizes = getAvailableThumbnailSizes;
+  exports.getAvailableThumbnailFormat = getAvailableThumbnailFormat;
+  exports.getDefaultTagColor = getDefaultTagColor;
+  exports.setDefaultTagColor = setDefaultTagColor;
+  exports.getDefaultTagTextColor = getDefaultTagTextColor;
+  exports.setDefaultTagTextColor = setDefaultTagTextColor;
 });

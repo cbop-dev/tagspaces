@@ -68,6 +68,14 @@
           </div>
           <div class="form-group">
             <div class="col-sm-12 checkbox">
+              <label for="showTagAreaOnStartupCheckbox">
+                <input type="checkbox" id="showTagAreaOnStartupCheckbox"/>
+                <span data-i18n="ns.dialogs:showTagAreaOnStartup"></span>
+              </label>
+            </div>
+          </div>
+          <div class="form-group">
+            <div class="col-sm-12 checkbox">
               <label for="loadLocationMetaData">
                 <input type="checkbox" id="loadLocationMetaData"/>
                 <span data-i18n="ns.dialogs:loadLocationMetaData"></span>
@@ -99,6 +107,47 @@
               <i class="fa fa-rotate-left"></i>&nbsp;
               <span data-i18n="ns.dialogs:restoreDefaulSettingButton"></span>
             </button>
+          </div>
+          <div class="form-group">
+            <label class="control-label" for="tagsBackgroundColor" data-i18n="ns.dialogs:tagBackgroundColor"></label>
+            <input type="color" class="form-control" id="tagsBackgroundColor" style="padding: 0">
+            <select class="form-control" id="tagsBackgroundColorChooser">
+              <option value="#ffffff">#ffffff</option>
+              <option value="#000000">#000000</option>
+              <option value="#ac725e">#ac725e</option>
+              <option value="#d06b64">#d06b64</option>
+              <option value="#f83a22">#f83a22</option>
+              <option value="#fa573c">#fa573c</option>
+              <option value="#ff7537">#ff7537</option>
+              <option value="#ffad46">#ffad46</option>
+              <option value="#42d692">#42d692</option>
+              <option value="#008000">#008000</option>
+              <option value="#7bd148">#7bd148</option>
+              <option value="#fad165">#fad165</option>
+              <option value="#FFCC24">#FFCC24</option>
+              <option value="#92e1c0">#92e1c0</option>
+              <option value="#9fe1e7">#9fe1e7</option>
+              <option value="#9fc6e7">#9fc6e7</option>
+              <option value="#4986e7">#4986e7</option>
+              <option value="#9a9cff">#9a9cff</option>
+              <option value="#b99aff">#b99aff</option>
+              <option value="#c2c2c2">#c2c2c2</option>
+              <option value="#cabdbf">#cabdbf</option>
+              <option value="#cca6ac">#cca6ac</option>
+              <option value="#f691b2">#f691b2</option>
+              <option value="#cd74e6">#cd74e6</option>
+              <option value="#a47ae2">#a47ae2</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="control-label" for="tagsForegroundColor" data-i18n="ns.dialogs:tagForegroundColor"></label>
+            <input type="color" class="form-control" id="tagsForegroundColor" style="padding: 0">
+            <select class="form-control" id="tagForegroundColorChooser">
+              <option value="#ffffff">#ffffff</option>
+              <option value="#cccccc">#cccccc</option>
+              <option value="#333333">#333333</option>
+              <option value="#000000">#000000</option>
+            </select>
           </div>
           <div style="margin-top: 20px;" class="alert alert-warning col-sm-12" role="alert"><i class="fa fa-flask fa-2x"></i>&nbsp;<span
             data-i18n="ns.dialogs:experimentalHelp"></span></div>
@@ -149,9 +198,25 @@
             <div class="col-sm-12 checkbox">
               <label for="useGenerateThumbnails">
                 <input type="checkbox" id="useGenerateThumbnails"/>
-                <span data-i18n="ns.dialogs:useGenerateThumbnails"></span><sup class="betaTag">BETA</sup>
+                <span data-i18n="ns.dialogs:useGenerateThumbnails"></span>
               </label>
             </div>
+          </div>
+          <div>
+            <div class="form-group">
+              <label for='defaultThumbnailSize' class="col-sm-6 control-label" data-i18n="ns.dialogs:defaultThumbnailSize"></label>
+               <div class="col-sm-6">
+                 <select class='form-control' id='defaultThumbnailSize'></select>
+               </div>
+            </div>
+          </div>
+          <div>
+            <div class="form-group">
+              <label for='defaultThumbnailFormat' class="col-sm-6 control-label" data-i18n="ns.dialogs:defaultThumbnailFormat"></label>
+               <div class="col-sm-6">
+                 <select class='form-control' id='defaultThumbnailFormat'></select>
+            </div>
+          </div>
           </div>
           <div style="margin-top: 20px;" class="alert alert-warning col-sm-12" role="alert"><i class="fa fa-flask fa-2x"></i>&nbsp;<span
             data-i18n="ns.dialogs:experimentalHelp"></span></div>
@@ -249,6 +314,27 @@
               </div>
             </div>
             <div class='form-group'>
+              <label class="col-sm-4 control-label" data-i18n="ns.dialogs:deleteDocumentKeyBinding"></label>
+
+              <div class="col-sm-7">
+                <input type='text' class='form-control' id='deleteDocumentKeyBinding' placeholder='esc'/>
+              </div>
+            </div>
+            <div class='form-group'>
+              <label class="col-sm-4 control-label" data-i18n="ns.dialogs:openFileKeyBinding"></label>
+
+              <div class="col-sm-7">
+                <input type='text' class='form-control' id='openFileKeyBinding' placeholder='esc'/>
+              </div>
+            </div>
+            <div class='form-group'>
+              <label class="col-sm-4 control-label" data-i18n="ns.dialogs:openFileExternallyKeyBinding"></label>
+
+              <div class="col-sm-7">
+                <input type='text' class='form-control' id='openFileExternallyKeyBinding' placeholder='esc'/>
+              </div>
+            </div>
+            <div class='form-group'>
               <label class="col-sm-4 control-label" data-i18n="ns.dialogs:documentPropertiesKeyBinding"></label>
 
               <div class="col-sm-7">
@@ -308,7 +394,6 @@
         </div>
       </div>
       <div class="modal-footer">
-        <!--button class="btn cancelButton" data-dismiss="modal" aria-hidden="true"><i class="fa fa-times fa-lg"></i></button-->
         <button class="btn btn-default pull-left" id="saveSettingsRestartButton" data-i18n="ns.dialogs:confirmSaveAndRestartButton"></button>
         <button class="btn btn-primary" id="saveSettingsButton" data-i18n="ns.dialogs:confirmSaveButton"></button>
       </div>
