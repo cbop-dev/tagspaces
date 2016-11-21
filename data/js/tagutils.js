@@ -224,7 +224,8 @@ define(function(require, exports, module) {
 
   function extractTags(filePath) {
     //console.log('Extracting tags from: ' + filePath);
-    var fileName = extractFileName(filePath);
+    return [];
+	/*var fileName = extractFileName(filePath);
     // WithoutExt
     var tags = [];
     var beginTagContainer = fileName.indexOf(BEGIN_TAG_CONTAINER);
@@ -242,7 +243,7 @@ define(function(require, exports, module) {
         cleanedTags.push(tags[i]);
       }
     }
-    return cleanedTags;
+    return cleanedTags;*/
   }
 
   function suggestTags(filePath) {
