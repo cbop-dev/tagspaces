@@ -412,7 +412,7 @@ define(function(require, exports, module) {
   exports.renameMetaTag = renameMetaTag;
   exports.removeMetaTag = removeMetaTag;
   exports.loadFolderMetaDataPromise = loadFolderMetaDataPromise;
-  exports.createMetaFolder = createMetaFolder;
+  //exports.createMetaFolder = createMetaFolder;
   //CB-Edit:
   exports.generateImageThumbnail = generateImageThumbnail;
   exports.supportedImageExtensions = supportedImageExtensions;
