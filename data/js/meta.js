@@ -417,5 +417,4 @@ define(function(require, exports, module) {
   exports.generateImageThumbnail = generateImageThumbnail;
   exports.supportedImageExtensions = supportedImageExtensions;
   exports.createMetaFolderPromise = createMetaFolderPromise;
->>>>>>> master
 });
