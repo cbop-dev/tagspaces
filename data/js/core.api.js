@@ -1,7 +1,7 @@
-/* Copyright (c) 2012-2015 The TagSpaces Authors. All rights reserved.
+/* Copyright (c) 2012-2017 The TagSpaces Authors. All rights reserved.
  * Use of this source code is governed by a AGPL3 license that
  * can be found in the LICENSE file. */
-/*global isNode, isWin, isFirefox, Mousetrap, gui */
+/*global isWin, isFirefox, Mousetrap, gui */
 
 /**
  * Description
@@ -11,6 +11,22 @@ define(function(require, exports, module) {
   'use strict';
 
   console.log('Loading core.api.js ...');
+
+  require('jquery');
+  require('jqueryui');
+  require('hammerjs');
+  require('jqueryhammerjs');
+  require('bootstrap');
+  require('bootstrap3xeditable');
+  require('bootstrapvalidator');
+  require('jquerysimplecolorpicker');
+  require('mousetrap');
+  require('mousetrapgb');
+  require('select2');
+  require('handlebarsjs');
+  require('tssettingsdefault');
+  require('noty');
+  require('i18next');
 
   // Importing modules
   var tsSettings = require('tssetting');
@@ -144,8 +160,8 @@ define(function(require, exports, module) {
       }
 
       switchInterfaceLanguage(language).then(function() {
-        if (isNode || isElectron) {
-          tsIOApi.initMainMenu();
+        if (isElectron) {
+          tsIOApi.initElectronIntegration();
         }
 
         if (tsSettings.Settings.tagspacesList.length < 1) {
@@ -159,10 +175,6 @@ define(function(require, exports, module) {
       initKeyBindings();
       tsIOApi.checkAccessFileURLAllowed ? tsIOApi.checkAccessFileURLAllowed() : true;
 
-      if (isNode || isChrome || isElectron || isWeb) {
-        // Handle command line argument in node-webkit
-        tsIOApi.handleStartParameters(); // Handle minimizing to the tray in node-webkit
-      }
       console.log('Document ready finished. Layout initialized');
       checkForNewVersion();
     });
@@ -203,18 +215,6 @@ define(function(require, exports, module) {
   }
 
   function initKeyBindings() {
-    if (isNode) {
-      var win = gui.Window.get();
-      Mousetrap.bind(tsSettings.getOpenDevToolsScreenKeyBinding(), function() {
-        win.showDevTools();
-      });
-      Mousetrap.bind(tsSettings.getReloadApplicationKeyBinding(), function() {
-        win.reloadIgnoringCache();
-      });
-      Mousetrap.bind(tsSettings.getToggleFullScreenKeyBinding(), function() {
-        win.toggleFullscreen();
-      });
-    }
     Mousetrap.bind(tsSettings.getShowTagLibraryKeyBinding(), function() {
       tsCoreUI.showTagsPanel();
     });
@@ -231,7 +231,7 @@ define(function(require, exports, module) {
       tsCoreUI.showFileRenameDialog(TSCORE.selectedFiles[0]);
     });
     Mousetrap.bind(tsSettings.getDeleteDocumentKeyBinding(), function() {
-      tsCoreUI.showDeleteFilesDialog(TSCORE.selectedFiles[0]);
+      tsCoreUI.showDeleteFilesDialog();
     });
     Mousetrap.bind(tsSettings.getOpenFileKeyBinding(), function() {
       tsFileOpener.openFile(TSCORE.selectedFiles[0]);
@@ -310,7 +310,7 @@ define(function(require, exports, module) {
   }
 
   function updateFileModel(model, oldPath, newPath) {
-    console.log('Removing file from model');
+    console.log('Updating file from model');
     var title = tsTagUtils.extractTitle(newPath),
       fileExt = tsTagUtils.extractFileExtension(newPath),
       fileTags = tsTagUtils.extractTags(newPath);
@@ -332,13 +332,20 @@ define(function(require, exports, module) {
     // max. estimated to 40 ca. 5 symbols per tag _[er], max. path length 25x chars
     headers.push('path');
     headers.push('title');
+    headers.push('changed_date');
     headers.push('size');
     for (var i = 0; i < numberOfTagColumns; i++) {
       headers.push('tag' + i);
     }
     csv += headers.join(',') + '\n';
     for (var i = 0; i < fileList.length; i++) {
-      var row = fileList[i].path + ',' + fileList[i].title + ',' + fileList[i].size + ',' + fileList[i].tags;
+      var lmtd = "";
+      try {
+        lmtd = (new Date(fileList[i].lmdt)).toISOString();
+      } catch (e) {
+        console.log("error parsing lmdt date");
+      }
+      var row = fileList[i].path + ',' + fileList[i].title + ',' + lmtd + ',' + fileList[i].size + ',' + fileList[i].tags;
       rows.push(row);
     }
     csv += rows.join('\n');
@@ -425,14 +432,12 @@ define(function(require, exports, module) {
     }
 
     if (shouldOpenCol2) {
-      //$("#openLeftPanel").hide();
       $(".col2").show();
     } else {
       $(".col2").hide();
     }
 
     if (shouldOpenCol3) {
-      //$("#openLeftPanel").hide();
       $(".col3").show();
       hidePerspectiveMenu();
     } else {
@@ -441,7 +446,6 @@ define(function(require, exports, module) {
   }
 
   function hidePerspectiveMenu() {
-
     $(".perspectiveMainMenuButton").hide();
   }
 
@@ -479,7 +483,6 @@ define(function(require, exports, module) {
   }
 
   function reloadUI() {
-
     location.reload();
   }
 

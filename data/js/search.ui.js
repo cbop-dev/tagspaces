@@ -2,12 +2,11 @@
  * Use of this source code is governed by a AGPL3 license that
  * can be found in the LICENSE file. */
 
-/* global define, Handlebars, isNode */
+/* global define, Handlebars*/
 define(function(require, exports, module) {
   'use strict';
   console.log('Loading search.ui.js ...');
   var TSCORE = require('tscore');
-  var TSPOSTIO = require("tspostioapi");
 
   var initUI = function() {
     // Search UI
@@ -18,10 +17,6 @@ define(function(require, exports, module) {
         cancelSearch();
       } else {
         TSCORE.Search.nextQuery = this.value;
-      }
-      if (this.value.length === 0) {
-        TSCORE.Search.nextQuery = this.value;
-        TSCORE.PerspectiveManager.redrawCurrentPerspective();
       }
     }).focus(function(e) {
       $("#searchOptions").hide();
@@ -178,6 +173,8 @@ define(function(require, exports, module) {
         TSCORE.PRO.Search.addQueryToHistory(origSearchVal);
       }
       TSCORE.Search.nextQuery = $('#searchBox').val();
+    } else {
+      cancelSearch();
     }
     $('#searchOptions').hide();
     TSCORE.PerspectiveManager.redrawCurrentPerspective();
@@ -188,10 +185,19 @@ define(function(require, exports, module) {
     // Restoring initial dir listing without subdirectories
     TSCORE.IO.listDirectoryPromise(TSCORE.currentPath).then(
       function(entries) {
-        TSPOSTIO.listDirectory(entries);
+        TSCORE.PerspectiveManager.updateFileBrowserData(entries);
+        TSCORE.updateSubDirs(entries);        
       }
     ).catch(function(err) {
-      TSPOSTIO.errorOpeningPath(TSCORE.currentPath);
+      var dir1 = TSCORE.TagUtils.cleanTrailingDirSeparator(TSCORE.currentLocationObject.path);
+      var dir2 = TSCORE.TagUtils.cleanTrailingDirSeparator(TSCORE.currentPath);
+      // Close the current location if the its path could not be opened
+      if (dir1 === dir2) {
+        TSCORE.showAlertDialog($.i18n.t('ns.dialogs:errorOpeningLocationAlert'));
+        TSCORE.closeCurrentLocation();
+      } else {
+        TSCORE.showAlertDialog($.i18n.t('ns.dialogs:errorOpeningPathAlert'));
+      }      
       console.warn("Error listing directory" + err);
     });
   }

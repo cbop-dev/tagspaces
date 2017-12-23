@@ -135,7 +135,7 @@ define(function(require, exports, module) {
 
   function searchData(data, query) {
     // TODO make a switch in gui for content search
-    var searchContentSupported = (isChrome || isFirefox || isWeb) ? false : true;
+    var searchContentSupported = (isChrome || isFirefox) ? false : true;
     var queryObj = prepareQuery(query);
     var searchResults = [];
     var metaDirPattern = TSCORE.dirSeparator + TSCORE.metaFolder + TSCORE.dirSeparator;
@@ -149,11 +149,10 @@ define(function(require, exports, module) {
             var indexOfMetaDirectory = fileEntry.path.indexOf(metaDirPattern);
 
             // Searching in file names while skipping paths containing '/.ts/'
-            if (indexOfMetaDirectory < 1 &&
-              filterFileObject(fileEntry, queryObj) &&
-              queryObj.fileTypeFilter(fileEntry.name.toLowerCase())) {
+            if (indexOfMetaDirectory < 1 && filterFileObject(fileEntry, queryObj) && queryObj.fileTypeFilter(fileEntry.name.toLowerCase())) {
               searchResults.push(fileEntry);
               resolve();
+              return;
             }
 
             // Searching in content
@@ -227,6 +226,7 @@ define(function(require, exports, module) {
                       //    searchResults.push(mainFileEntry);
                       searchResults.push(fileEntry);
                       resolve();
+                      return;
                       //  }, function() {
                       //    console.log("main file does not exist anymore " + fileEntry.path);
                       //    resolve();
@@ -236,20 +236,25 @@ define(function(require, exports, module) {
                       fileEntry.lmdt = 0;
                       searchResults.push(fileEntry);
                       resolve();
+                      return;
                     }
                   } else { // file is regular text, md, json file
                     searchResults.push(fileEntry);
                     resolve();
+                    return;
                   }
                 } else { // file does not match
                   resolve();
+                  return;
                 }
               }, function(err) {
-                resolve();
                 console.log("Failed loading content for: " + fileEntry.path);
+                resolve();
+                return;
               });
             } else {
               resolve();
+              return;
             }
           });
         }
@@ -285,7 +290,7 @@ define(function(require, exports, module) {
     var allTags = [];
     data.forEach(function(fileEntry) {
       fileEntry.tags.forEach(function(tag) {
-        allTags.push(tag.toLowerCase());
+        allTags.push(("" + tag).toLowerCase());
       });
     });
     var countData = _.countBy(allTags, function(obj) {

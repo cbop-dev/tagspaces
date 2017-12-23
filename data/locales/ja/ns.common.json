@@ -257,5 +257,8 @@
     "createNewButton": "新規",
     "createNewButtonTitle": "新規にドキュメントを作成するためにメニューを開きます。",
     "createNewDocument": "新規にドキュメントを作成する",
+    "geoTaggingNotPossible": "ジオタグは不可です！",
+    "needProVersion": "この機能を使用するには、PROバージョンが必要です。",
+    "sizeInBytes": "バイト",
     "-": "-"
 }

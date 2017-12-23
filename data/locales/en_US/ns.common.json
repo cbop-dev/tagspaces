@@ -32,7 +32,8 @@
   "reloadFile": "Reload File",
   "closeFileTooltip": "Close current file",
   "closeFile": "Close File",
-  "filePropertiesTooltip": "Open the properties of the file",
+  "filePropertiesTooltip": "Show additional file information",
+  "folderPropertiesTooltip": "Show additional directory information",
   "fileProperties": "Properties",
   "editFileTooltip": "Edit current file",
   "editFile": "Edit File",
@@ -259,5 +260,9 @@
   "createNewDocument": "Create new document",
   "geoTaggingNotPossible": "Geo Tagging not possible!",
   "needProVersion": "You need the PRO version in order to use this functionality.",
+  "sizeInBytes": "bytes",
+  "error": "Error",
+  "warning": "Warning",
+  "info": "Info",
   "-": "-"
 }

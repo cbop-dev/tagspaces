@@ -1,6 +1,84 @@
 ﻿#Changelog
 
-## Version 2.6.0 / 2016.11.xx
+## Version 2.9.0 / 2017.07.15
+
+### Community
+- added support for playing flac and mp3 files
+- added swith for disabling global keybindings [#574](https://github.com/tagspaces/tagspaces/issues/574)
+- allow navigation in the alternative directoriy with a single click
+- updating electron to 1.6.8
+- fixed size of a iframe viewer in the edge browser
+- fixed missing thumbnails of files from search results
+- adding additional check for file path
+- update i18n files for spanish, chinese, russian and dutch languages
+
+### Pro
+- fixed issues with handling tags in sidecar files [#582](https://github.com/tagspaces/tagspaces/issues/582) and [#604](https://github.com/tagspaces/tagspaces/issues/604),
+
+## Version 2.8.0 / 2017.04.14
+
+### Community
+- adding support for opening internal links in MD and HTML documents and in file and folder descriptions
+- redesigning the user interface of the [list perspective](https://github.com/tagspaces/perspectiveList), adding support for folders
+- adding a button in the [editorHTML](https://github.com/tagspaces/editorHTML) extension for selecting/deselecting of all checkboxes in the current document
+- adding a [viewer for RTF](https://github.com/tagspaces/viewerRTF) as new extension
+- adding Vietnamese language thanks to [dd721411](https://www.transifex.com/user/profile/dd721411/)
+- disabling editing of the description on click, due to the need to open links
+- moving the tags after the subfolders in the folder navigator
+- fixing issue preventing creating new files
+- fixing CSV export of the filelist in Chrome
+- adding last changed date to the CSV export functionality
+- Firefox webclipper now generates .url files, added bookmark button to Firefox web clipper, thanks to [asciiascetic](https://github.com/asciiascetic)
+- fixing issue with handling paths containing % in the name
+- enable content search in webdav edition
+- export tag groups as json with unique id's, for easy reimporting
+- adding button for restoring the original tag groups
+- fixing issue with loading files on startup
+- fixing issue with removing multiple tags
+- removing deprecated *nwjs* support from the project
+
+### Pro
+- adding thumbnail generation for text based files such as md, text, json, xml, javascript and other
+- fixing the black background of html thumbnails
+
+
+## Version 2.7.0 / 2017.02.04
+
+### Community
+- redesigning the user interface for file and directory properties
+- read only support for file and directory description
+- showing the count of tags in a tag group only if it is collapsed
+- adding support for gfm breaks for the markdown transformer
+- updating the user ideas link to point to a [trello board](https://trello.com/b/TGeG5bi9/)
+- fix for the form validation in the dialogs
+- adding danish translations
+- saving the windows state, size and location for the next start of tha app
+- cap max result to 2000 in settings instead of setting the limit to 0
+- redesigning the file properties area
+- changing the reload application shortcut key to F5
+- added link to the new tagspaces documentation website
+- improved performance by search
+- migration to electron 1.4.14
+- [#494](https://github.com/tagspaces/tagspaces/issues/494) fixed - ignore file/directory names that start with dot, instead of full paths
+- [#430](https://github.com/tagspaces/tagspaces/issues/430) fixed - undefined in the file name
+- [#498](https://github.com/tagspaces/tagspaces/issues/498) fixed - support for relative path in portable mode
+- [#489](https://github.com/tagspaces/tagspaces/issues/489) fixed - psn startup parameter issue on mac
+- [#454](https://github.com/tagspaces/tagspaces/issues/454) fixed
+- [#405](https://github.com/tagspaces/tagspaces/issues/405) fixed
+- [#411](https://github.com/tagspaces/tagspaces/issues/411) fixed
+
+### Pro
+- added file description editor in the file properties area
+- added directory description in the directory properties are
+
+### Chrome Extension and Firefox Addon
+- improved onboarding for the chrome extension
+
+### Android App
+- corrected the loading of meta data
+
+
+## Version 2.6.0 / 2016.11.23
 
 ### Community
 - Adding a tray icon with a menu
@@ -13,10 +91,17 @@
 - Add a checkbox in the settings to open the tag library on startup
 - Added editor for date and time smart tags
 - Add readability mode in viewerMHTML and viewerHTML extensions
-- Adding support for reading emails in eml format
+- Adding support for reading emails in EML format
 - Added GIF to the list of supported image extensions for creating thumbnails on the fly.
 - Adding a new plus menu for creating the standard file types
 - Adding global shortcut for saving edited text files
+- Added 64bit RPM package
+- Arrow keys are now moving the selection of the current opened files in the grid and list perspectives
+- Tags are displayed now in the image swiper perspective
+- Added sorting and grouping capabilities to the grid perspective
+- Completely reimplementing the viewerImage with the viewer.js library adding many new features
+- Added markdown preview functionality in the editorText
+- Show source url and saved date in viewerHTML
 
 ### Pro
 - Added geo tagging with the leaflet library

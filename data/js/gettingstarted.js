@@ -28,9 +28,7 @@ define(function(require, exports, module) {
     $('#openOptions').removeClass("uiEmphasizer");
   }
 
-  exports.closeTour = closeTour();
-
-  exports.startTour = function() {
+  function startTour() {
     var tour = {
       id: "gettingstarted",
       steps: [
@@ -211,6 +209,13 @@ define(function(require, exports, module) {
 
     // Start the tour!
     hopscotch.startTour(tour);
-  };
+  }
+
+  function stopTour() {
+    hopscotch.endTour();
+  }
+
+  exports.stopTour = stopTour;
+  exports.startTour = startTour;
 
 });

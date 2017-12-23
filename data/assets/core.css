@@ -1,4 +1,4 @@
-/* Copyright (c) 2012-2015 The TagSpaces Authors. All rights reserved. Use of this source code
+/* Copyright (c) 2012-2017 The TagSpaces Authors. All rights reserved. Use of this source code
  * is governed by a AGPL3 license that can be found in the LICENSE file. */
 
 .appbody {
@@ -24,9 +24,10 @@
 }
 
 #appVersion {
-    font-size: 1.3em;
+    font-size: 1em;
     color: #616577;
     margin-left: -7px;
+    top: -0.8em;
 }
 
 #startNewInstanceBack {
@@ -45,8 +46,12 @@
     padding-left: 0;
 }
 
+.locationName {
+    margin-left: 10px;
+}
+
 #statusBar {
-    margin-top: 12px;
+    margin-top: 7px;
     font-size: 14px;
     font-size: 12px;
     text-align: center;
@@ -73,6 +78,7 @@
 
 #iframeViewer {
     width: 100%;
+    height: 100%;
     border-width: 0;
 }
 
@@ -94,7 +100,7 @@
 }
 
 #fileTitle {
-    margin-top: 5px;
+    margin-top: 4px;
     height: 30px;
     padding-right: 3px;
     padding-left: 3px;
@@ -109,7 +115,8 @@
 
 #fileTitle:hover {
     text-decoration: none;
-    background-color: rgba(97, 255, 0, 0.23);
+    background-color: #DBDBDB;
+    border-radius: 4px;
 }
 
 #viewsRadio {
@@ -147,6 +154,7 @@
 
 #tagGroupsContent {
     min-height: 50px;
+    padding-left: 2px;
 }
 
 #clearFilterButton {
@@ -550,5 +558,165 @@ input a.resetFilter {
 }
 
 #showNewFileDialog {
+    padding-top: 0;
     padding-left: 13px;
 }
+
+#showSearchButton {
+    padding-top: 0;
+}
+
+#dialogChromeFileAccessInfo img {
+    border: 1px solid lightgray;
+    max-width: 95%;
+    height: auto;
+    display: block;
+    margin: 20px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#waitingDialog {
+    z-index: 99999;
+}
+
+.buttonToggled {
+    border: 1px solid lightgray !important;
+    background-color: #eaeaea !important;
+}
+
+/* Begin file properties */
+#toggleFileProperitesButton {
+    padding-top: 0px;
+    padding-bottom: 0px;
+    padding-left: 10px;
+    padding-right: 10px;
+    margin-right: 7px;
+    border: 1px solid transparent;
+}
+
+#filePropertiesArea {
+    padding: 5px;
+    background-color: #eaeaea;
+    border-radius: 6px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+#filePropertiesArea .control-label {
+    font-size: small;
+    color: #868686;
+}
+
+#fileDescriptionProperty {
+    display: none;
+    border: 1px solid #e2e2e2;
+    border-radius: 2px;
+    padding: 5px;
+    padding-bottom: 0;
+    background-color: white;
+    font-size: 15px;
+}
+
+#cancelEditFileDescriptionButton {
+    display: none;
+}
+
+#saveFileDescriptionButton {
+    display: none;
+}
+
+#editFileDescriptionButton {
+    padding-top: 1px;
+    color: #1DD19F;
+}
+
+#addTagsFileDescriptionButton {
+    padding-top: 5px;
+    color: #1DD19F;
+}
+
+#fileDescriptionPropertyRendered {
+    width: 100%;
+    height: 200px;
+    overflow-y: auto;
+    font-size: small;
+    background-color: white;
+    border-radius: 4px;
+    padding: 4px;
+}
+
+/* End file properties */
+
+/* Begin folder properties */
+
+#toggleFolderProperitesButton {
+    margin-top: 1px;
+    margin-left: 2px;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+    border: 1px solid transparent;
+}
+
+#toggleFolderProperitesButton i {
+    vertical-align: 0;
+}
+
+#folderPropertiesArea {
+    display: none;
+    padding: 5px;
+    background-color: #eaeaea;
+    border-radius: 6px;
+}
+
+#folderPropertiesArea .control-label {
+    font-size: small;
+    color: #868686;
+}
+
+#folderPropertiesArea .form-group {
+    margin-bottom: 0;
+}
+
+#folderDescriptionProperty {
+    display: none;
+    border: 1px solid #e2e2e2;
+    border-radius: 4px;
+    padding: 4px;
+    padding-bottom: 0;
+    background-color: white;
+    font-size: 15px;
+}
+
+#cancelEditFolderDescriptionButton {
+    display: none;
+}
+
+#saveFolderDescriptionButton {
+    display: none;
+}
+
+#editFolderDescriptionButton {
+    padding-top: 1px;
+    color: #1DD19F;
+}
+
+#addTagsFolderDescriptionButton {
+    padding-top: 5px;
+    color: #1DD19F;
+}
+
+#folderDescriptionPropertyRendered {
+    width: 100%;
+    height: 30px;
+    overflow-y: auto;
+    font-size: small;
+    background-color: white;
+    border-radius: 4px;
+    padding: 4px;
+}
+
+#folderTagsProperty {
+    font-size: 15px;
+}
+/* End folder properties */

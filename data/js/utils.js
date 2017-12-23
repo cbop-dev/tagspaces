@@ -1,4 +1,4 @@
-/* Copyright (c) 2012-2016 The Tagspaces Authors. All rights reserved.
+/* Copyright (c) 2012-2017 The Tagspaces Authors. All rights reserved.
  * Use of this source code is governed by a AGPL3 license that
  * can be found in the LICENSE file. */
 
@@ -9,7 +9,12 @@ define(function(require, exports, module) {
   console.log('Loading utils.js ...');
 
   var TSCORE = require('tscore');
-  var TSPOSTIO = require('tspostioapi');
+  var marked = require("marked");
+  var saveAs = require("libs/filesaver.js/FileSaver.min");
+
+  function saveAsTextFile(blob, filename) {
+    saveAs(blob, filename);
+  }
 
   //Conversion utility
   function arrayBufferToDataURL(arrayBuffer, mime) {
@@ -331,6 +336,78 @@ define(function(require, exports, module) {
     return parseFloat(currentLat) + "," + parseFloat(currentLng);
   }
 
+  function hasURLProtocol(url) {
+    return (
+      url.indexOf("http://") === 0 ||
+      url.indexOf("https://") === 0 ||
+      url.indexOf("file://") === 0 ||
+      url.indexOf("data:") === 0
+    );
+  }
+
+  function handleLinks($element) {
+    $element.find("img[src]").each(function() {
+      var currentSrc = $(this).attr("src");
+      if (!hasURLProtocol(currentSrc)) {
+        var path = (isWeb ? "" : "file://") + TSCORE.currentPath + "/" + currentSrc;
+        $(this).attr("src", path);
+      }
+    });
+
+    $element.find("a[href]").each(function() {
+      var currentSrc = $(this).attr("href");
+      var path;
+
+      if(currentSrc.indexOf("#") === 0 ) {
+        // Leave the default link behaviour by internal links
+      } else {
+        if (!hasURLProtocol(currentSrc)) {
+          var path = (isWeb ? "" : "file://") + TSCORE.currentPath + "/" + currentSrc;
+          $(this).attr("href", path);
+        }
+
+        $(this).off();
+        $(this).on('click', function(e) {
+          e.preventDefault();
+          if (path) {
+            currentSrc = encodeURIComponent(path);
+          }
+          var msg = {command: "openLinkExternally", link: currentSrc};
+          window.postMessage(JSON.stringify(msg), "*");
+        });
+      }
+    });
+  }
+
+  function setMarkDownContent($targetElement, content) {
+    $targetElement.html(convertMarkdown(content));
+    handleLinks($targetElement);
+  }
+
+  function convertMarkdown(content) {
+    var mdOptions = {
+      gfm: true,
+      tables: true,
+      breaks: true,
+      pedantic: false,
+      sanitize: true,
+      smartLists: true,
+      smartypants: false
+    }
+    if (marked) {
+      return marked(content, mdOptions);
+    } else {
+      console.warn("Marked library not loaded...");
+    }
+  }
+
+  function guid() {
+    function s4() {
+      return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+    }
+    return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
+  }
+
   exports.arrayBufferToDataURL = arrayBufferToDataURL;
   exports.base64ToArrayBuffer = base64ToArrayBuffer;
   exports.dataURLtoBlob = dataURLtoBlob;
@@ -356,5 +433,10 @@ define(function(require, exports, module) {
   exports.parseDate = parseDate;
   exports.parseDateMonth = parseDateMonth;
   exports.splitValue = splitValue;
+  exports.handleLinks = handleLinks;
+  exports.guid = guid;
+  exports.setMarkDownContent = setMarkDownContent;
+  exports.convertMarkdown = convertMarkdown;
+  exports.saveAsTextFile = saveAsTextFile;
 
 });

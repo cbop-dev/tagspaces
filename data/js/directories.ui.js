@@ -1,4 +1,4 @@
-/* Copyright (c) 2012-2016 The TagSpaces Authors. All rights reserved.
+/* Copyright (c) 2012-2017 The TagSpaces Authors. All rights reserved.
  * Use of this source code is governed by a AGPL3 license that
  * can be found in the LICENSE file. */
 
@@ -9,108 +9,125 @@ define(function(require, exports, module) {
   console.log('Loading directories.ui.js ...');
 
   var TSCORE = require('tscore');
-  var TSPOSTIO = require("tspostioapi");
   var tsExtManager = require('tsextmanager');
 
   var homeFolderTitle = 'Home';
   var directoryHistory = [];
   var metaTagGroupsHistory = null;
   var dir4ContextMenu = null;
+  var folderPropertiesOpened = false;
+
   var alternativeDirectoryNavigatorTmpl = Handlebars.compile(
     '{{#each dirHistory}}' +
     '<div class="btn-group">' +
-    '<button class="btn btn-link dropdown-toggle" data-menu="{{@index}}">' +
-    '<div class="altNavFolderTitle"><span style="padding-right: 5px; padding-left: 1px;">{{name}}</span><i class="fa fa-caret-right"></i></div>' +
-    '</button>' +
-    '<div class="dropdown clearfix dirAltNavMenu" id="dirMenu{{@index}}" data-path="{{path}}">' +
-    '<ul role="menu" class="dropdown-menu">' +
-    '<li class="dropdown-header"><button class="close">&times;</button><span data-i18n="ns.common:actionsForDirectory2"></span>&nbsp;"{{name}}"</li>' +
-    '<li><a class="btn btn-link reloadCurrentDirectory" data-path="{{path}}" style="text-align: left"><i class="fa fa-refresh fa-fw fa-lg"></i><span data-i18n="ns.common:reloadCurrentDirectory"></span></a></li>' +
-    '<li><a class="btn btn-link createSubdirectory" data-path="{{path}}" style="text-align: left"><i class="fa fa-folder-o fa-fw fa-lg"></i><span data-i18n="ns.common:createSubdirectory"></span></a></li>' +
-    '<li><a class="btn btn-link renameDirectory" data-path="{{path}}" style="text-align: left"><i class="fa fa-paragraph fa-fw fa-lg"></i><span data-i18n="ns.common:renameDirectory"></span></a></li>' +
-    '<li class="divider" style="width: 100%"></li>' +
-    '<li class="dropdown-header"><span data-i18n="ns.common:subfodersOfDirectory2"></span>&nbsp;"{{name}}"</li>' +
-    '<div class="dirButtonContainer">' +
-      //'<button class="btn dirButton parentDirectoryButton" data-path="{{path}}/.." title="Go to parent folder">' +
-      //'<i class="fa fa-level-up"></i></button>' +
+    '  <button class="btn btn-link dropdown-toggle" data-path="{{path}}"  data-menu="{{@index}}">' +
+    '    <div class="altNavFolderTitle">' +
+    '      <span style="{{#if @last}} padding-right: 0 !important; color: black; {{/if}} padding-right: 5px; padding-left: 1px;">{{name}}</span>' +
+    '      <i {{#if @last}} style="display: none;" {{/if}} class="fa fa-caret-right"></i>' +
+    '    </div>' +
+    '  </button>' +
+    '  <div class="dropdown clearfix dirAltNavMenu" id="dirMenu{{@index}}" data-path="{{path}}">' +
+    '    <ul role="menu" class="dropdown-menu">' +
+    '      <li class="dropdown-header"><button class="close">&times;</button><span data-i18n="ns.common:actionsForDirectory2"></span>&nbsp;"{{name}}"</li>' +
+    '      <li><a class="btn btn-link reloadCurrentDirectory" data-path="{{path}}" style="text-align: left"><i class="fa fa-refresh fa-fw fa-lg"></i><span data-i18n="ns.common:reloadCurrentDirectory"></span></a></li>' +
+    '      <li><a class="btn btn-link createSubdirectory" data-path="{{path}}" style="text-align: left"><i class="fa fa-folder-o fa-fw fa-lg"></i><span data-i18n="ns.common:createSubdirectory"></span></a></li>' +
+    '      <li><a class="btn btn-link renameDirectory" data-path="{{path}}" style="text-align: left"><i class="fa fa-paragraph fa-fw fa-lg"></i><span data-i18n="ns.common:renameDirectory"></span></a></li>' +
+    '      <li class="divider" style="width: 100%"></li>' +
+    '      <li class="dropdown-header"><span data-i18n="ns.common:subfodersOfDirectory2"></span>&nbsp;"{{name}}"</li>' +
+    '      <div class="dirButtonContainer">' +
     '{{#if children}}' +
     '{{#each children}}' +
-    '<button class="btn dirButton" data-path="{{path}}" title="{{path}}">' +
-    '<i class="fa fa-folder-o"></i>&nbsp;{{name}}</button>' +
+    '        <button class="btn dirButton" data-path="{{path}}" title="{{path}}"><i class="fa fa-folder-o"></i>&nbsp;{{name}}</button>' +
     '{{/each}}' +
     '{{else}}' +
-    '<div>&nbsp;&nbsp;&nbsp;<span data-i18n="ns.common:noSubfoldersFound"></span></div>' +
+    '        <div>&nbsp;&nbsp;&nbsp;<span data-i18n="ns.common:noSubfoldersFound"></span></div>' +
     '{{/if}}' +
+    '      </div>' +
+    '     </ul>' +
+    '   </div>' +
     '</div>' +
-    '<li class="dropdown-header"><span data-i18n="ns.common:tagsOfDirectory2">Directory Tags</span></li>' +
-    '</ul>' +
-    '</div>' +
-    '</div>' +
-    '{{/each}}'
+    '{{/each}}' +
+    '<button class="btn btn-link" data-i18n="[title]ns.common:folderPropertiesTooltip" id="toggleFolderProperitesButton"><i class="fa fa-info fa-lg"></i></button>' +
+    ''
   );
 
   var mainDirectoryNavigatorTmpl = Handlebars.compile(
     '<div>{{#each dirHistory}}' +
-    '<div class="accordion-group disableTextSelection">' +
-    '<div class="accordion-heading btn-group flexLayout" key="{{path}}">' +
-    '<button class="btn btn-link btn-lg directoryIcon" data-toggle="collapse" data-target="#dirButtons{{@index}}" key="{{path}}" title="{{../toggleDirectory}}">' +
-    '<i class="fa fa-folder fa-fw"></i>' +
-    '</button>' +
-    '<button class="btn btn-link directoryTitle ui-droppable flexMaxWidth" key="{{path}}" title="{{path}}">{{name}}</button>' +
-    '<button class="btn btn-link btn-lg directoryActions" key="{{path}}" title="{{../directoryOperations}}">' +
-    '<b class="fa fa-ellipsis-v"></b>' +
-    '</button>' +
-    '</div>' +
-    '<div class="accordion-body collapse in" id="dirButtons{{@index}}">' +
-    '<div class="accordion-inner" id="dirButtonsContent{{@index}}" style="padding: 4px;">' +
-    '<div class="dirButtonContainer">' +
-    '<button class="btn btn-sm btn-default dirButton parentDirectoryButton" key="{{path}}/.." title="Go to parent folder">' +
-    '<i class="fa fa-level-up"></i></button>' +
-    '{{#if children}}' +
-    '{{#each children}}' +
-    '<button class="btn btn-sm btn-default dirButton ui-droppable" key="{{path}}" title="{{path}}">' +
-    '<div><i class="fa fa-folder-o"></i>&nbsp;{{name}}</div></button>' +
-    '{{/each}}' +
-    '{{else}}' +
-    '<div>&nbsp;&nbsp;&nbsp;{{../../noSubfoldersFound}}</div>' +
-    '{{/if}}' +
-    '</div>' +
-    '</div>' +
-    '</div>' +
-    '</div>' +
+    '  <div class="accordion-group disableTextSelection">' +
+    '    <div class="accordion-heading btn-group flexLayout" data-path="{{path}}">' +
+    '      <button class="btn btn-link btn-lg directoryIcon" data-toggle="collapse" data-target="#dirButtons{{@index}}" data-path="{{path}}" title="{{../toggleDirectory}}">' +
+    '        <i class="fa fa-folder fa-fw"></i>' +
+    '      </button>' +
+    '      <button class="btn btn-link directoryTitle ui-droppable flexMaxWidth" data-path="{{path}}" title="{{path}}">{{name}}</button>' +
+    '      <button class="btn btn-link btn-lg directoryActions" data-path="{{path}}" title="{{../directoryOperations}}">' +
+    '        <b class="fa fa-ellipsis-v"></b>' +
+    '      </button>' +
+    '    </div>' +
+    '    <div class="accordion-body collapse in" id="dirButtons{{@index}}">' +
+    '      <div class="accordion-inner" id="dirButtonsContent{{@index}}" style="padding: 4px; padding-top: 0;">' +
+    '        <div class="dirButtonContainer">' +
+    '          <button class="btn btn-sm btn-default dirButton parentDirectoryButton" data-path="{{path}}/.." title="Go to parent folder">' +
+    '            <i class="fa fa-level-up"></i>' +
+    '          </button>' +
+    '      {{#if children}}' +
+    '        {{#each children}}' +
+    '          <button class="btn btn-sm btn-default dirButton ui-droppable" data-path="{{path}}" title="{{path}}">' +
+    '            <div><i class="fa fa-folder-o"></i>&nbsp;{{name}}</div>' +
+    '          </button>' +
+    '        {{/each}}' +
+    '      {{else}}' +
+    '          <div>&nbsp;&nbsp;&nbsp;{{../../noSubfoldersFound}}</div>' +
+    '      {{/if}}' +
+    '        </div>' +
+    '        <div class="directoryTagsArea" data-path="{{path}}" style="padding: 4px; padding-left: 0; "></div>' +
+    '      </div>' +
+    '    </div>' +
+    '  </div>' +
     '{{/each}}</div>'
   );
 
   var locationChooserTmpl = Handlebars.compile(
     '<li class="dropdown-header"><button class="close">&times;</button></li>' +
     '<li class="flexLayout">' +
-    '<button style="text-align: left;" class="btn btn-link flexMaxWidth" id="createNewLocation">' +
-    '<i class="fa fa-plus"></i>&nbsp;<span data-i18n="[title]ns.common:connectNewLocationTooltip;ns.common:connectNewLocationTooltip">{{connectLocation}}</span>' +
-    '</button>' +
+    '  <button style="text-align: left;" class="btn btn-link flexMaxWidth" id="createNewLocation">' +
+    '    <i class="fa fa-plus"></i>&nbsp;<span data-i18n="[title]ns.common:connectNewLocationTooltip;ns.common:connectNewLocationTooltip">{{connectLocation}}</span>' +
+    '  </button>' +
     '</li>' +
     '<li class="divider"></li>' +
     '<li class="dropdown-header" data-i18n="ns.common:yourLocations">{{yourLocations}}</li>' +
     '{{#each locations}}' +
     '<li class="flexLayout">' +
-    '<button title="{{path}}" path="{{path}}" name="{{name}}" class="btn btn-link openLocation">' +
+    '  <button title="{{path}}" path="{{path}}" name="{{name}}" class="btn btn-link openLocation">' +
     '{{#if isDefault}}' +
-    '<i style="color: darkred" class="fa fa-bookmark" data-i18n="[title]ns.dialogs:startupLocation"></i>&nbsp;{{name}}' +
+    '    <i style="color: darkred" class="fa fa-bookmark" data-i18n="[title]ns.dialogs:startupLocation"></i>' +
     '{{else}}' +
-    '<i class="fa fa-bookmark"></i>&nbsp;{{name}}' +
+    '    <i class="fa fa-bookmark"></i>' +
     '{{/if}}' +
-    '</button>' +
-    '<button type="button" data-i18n="[title]ns.common:editLocation" title="{{editLocationTitle}}" location="{{name}}" path="{{path}}" class="btn btn-link pull-right editLocation">' +
-    '<i class="fa fa-pencil fa-lg"></i>' +
-    '</button>' +
+    '  <span class="locationName">{{name}}</span></button>' +
+    '  <button type="button" data-i18n="[title]ns.common:editLocation" title="{{editLocationTitle}}" location="{{name}}" path="{{path}}" class="btn btn-link pull-right editLocation">' +
+    '    <i class="fa fa-pencil fa-lg"></i>' +
+    '  </button>' +
     '</li>' +
     '{{/each}}'
   );
 
   function openLocation(path) {
+    var originalPath = path;
     console.log('Opening location in : ' + path);
+
     TSCORE.currentLocationObject = TSCORE.Config.getLocation(path);
+
+    // Add current application path to the relative path of the location in portable desktop mode
+    if (isElectron && __dirname && path.indexOf(".") === 0) {
+      if (path.indexOf("..") === 0) {
+        path = pathUtils.normalize(pathUtils.dirname(pathUtils.dirname(__dirname)) + TSCORE.dirSeparator + path);
+      } else {
+        path = pathUtils.normalize(pathUtils.dirname(pathUtils.dirname(__dirname)) + path.substring(1, path.length));
+      }
+    }
+
     if (TSCORE.currentLocationObject !== undefined) {
-      document.title = TSCORE.currentLocationObject.name + ' | ' + TSCORE.Config.DefaultSettings.appName;
+      document.title = TSCORE.currentLocationObject.name + ' | ' + TSCORE.Config.getAppFullName();
       $('#locationName').removeAttr("data-i18n");
       $('#locationName').text(TSCORE.currentLocationObject.name).attr('title', path);
       // Handle open default perspective for a location
@@ -124,6 +141,7 @@ define(function(require, exports, module) {
           perspectiveFound = true;
         }
       });
+
       if (perspectiveFound) {
         TSCORE.PerspectiveManager.changePerspective(defaultPerspective);
       } else if (activatedPerspectives.length > 0) {
@@ -131,10 +149,10 @@ define(function(require, exports, module) {
       }
 
       // Saving the last opened location path in the settings
-      TSCORE.Config.setLastOpenedLocation(path);
+      TSCORE.Config.setLastOpenedLocation(originalPath);
 
       if ($('#defaultLocation').prop('checked') === true || $('#defaultLocationEdit').prop('checked') === true) {
-        console.log("set default path " + path);
+        // console.log("set default path " + path);
         TSCORE.Config.setDefaultLocation(path);
         $('#defaultLocation').prop('checked', false);
         $('#defaultLocationEdit').prop('checked', false);
@@ -162,21 +180,19 @@ define(function(require, exports, module) {
     }
   }
 
-  function loadFolderMetaData(path, element, menuItem) {
+  function loadFolderMetaData(path, element) {
     var historyItem = getDirHistoryItem(path);
-    if (historyItem.metaData) {
-      generateFolderTags(historyItem.metaData.tags, element, menuItem);
+    TSCORE.Meta.loadFolderMetaDataPromise(path).then(function(metaData) {
+      historyItem.metaData = metaData;
+      if (historyItem.metaData.perspectives) {
+        TSCORE.PerspectiveManager.changePerspective(historyItem.metaData.perspectives);
+      }
+      generateFolderTags(metaData.tags, element);
       loadMetaTagGroups(historyItem.metaData);
-    } else {
-      TSCORE.Meta.loadFolderMetaDataPromise(path).then(function(metaData) {
-        historyItem.metaData = metaData;
-        generateFolderTags(metaData.tags, element, menuItem);
-        loadMetaTagGroups(historyItem.metaData);
-      }).catch(function(err) {
-        console.log("loadFolderMetaData: " + err);
-        generateFolderTags(null, element, menuItem);
-      });
-    }
+    }).catch(function(err) {
+      console.log("loadFolderMetaData: " + err);
+      generateFolderTags(null, element);
+    });
   }
 
   function loadMetaTagGroups(metaData) {
@@ -197,28 +213,9 @@ define(function(require, exports, module) {
     }
   }
 
-  function generateFolderTags(tags, element, menuItem) {
-    var $tagsElement = null;
-    if (element) {
-      var tagId = element.attr('key').split(TSCORE.dirSeparator).pop();
-      $tagsElement = $('#' + tagId);
-      if ($tagsElement.length === 0) {
-        $tagsElement = $('<div style="padding: 4px;"></div>');
-        $tagsElement.attr('id', tagId);
-        var $el = element.parent().find('.accordion-body');
-        if ($el.length > 0) {
-          $el.prepend($tagsElement);
-        }
-      } else {
-        $tagsElement.empty();
-      }
-    }
-    else if (menuItem) {
-      menuItem.empty();
-      $tagsElement = $('<div id style="padding: 4px;"></div>');
-      menuItem.append($tagsElement);
-    } else {
-      console.log("generateFolderTags error");
+  function generateFolderTags(tags, $directoryTagsArea) {
+    if ($directoryTagsArea) {
+      $directoryTagsArea.empty();
     }
 
     var tagString = '';
@@ -233,17 +230,14 @@ define(function(require, exports, module) {
 
       var genTagsBtns = TSCORE.generateTagButtons(tagString);
       if (genTagsBtns) {
-        $tagsElement.append(genTagsBtns);
+        $directoryTagsArea.append(genTagsBtns);
       }
     }
 
-    if (TSCORE.PRO && !menuItem) {
-      TSCORE.PRO.setContextMenu($tagsElement);
+    if (TSCORE.PRO && TSCORE.PRO.Directory) {
+      TSCORE.PRO.Directory.setContextMenu($directoryTagsArea);
     }
-
-    if (!TSCORE.PRO) {
-      $("#locationContent .dropDownIcon").hide();
-    }
+    $("#locationContent .dropDownIcon").hide();
   }
 
   function updateSubDirs(dirList) {
@@ -293,9 +287,15 @@ define(function(require, exports, module) {
       showRenameDirectoryDialog($(this).attr('data-path'));
     });
 
-    $alternativeNavigator.find('.dropdown-toggle').on('contextmenu click', function() {
+    $alternativeNavigator.find('.dropdown-toggle').on('contextmenu', function() {
       TSCORE.hideAllDropDownMenus();
-      showDropDown('#dirMenu' + $(this).attr('data-menu'), $(this));
+      $('#dirMenu' + $(this).attr('data-menu')).css("display", "block");
+      return false;
+    });
+
+    $alternativeNavigator.find('.dropdown-toggle').on('click', function() {
+      TSCORE.hideAllDropDownMenus();
+      navigateToDirectory($(this).attr('data-path'));
       return false;
     });
 
@@ -310,24 +310,14 @@ define(function(require, exports, module) {
     if ($alternativeNavigator.i18n) {
       $alternativeNavigator.i18n();
     }
-  }
 
-  function showDropDown(menuId, sourceObject) {
-    var $menu = $(menuId);
+    $('#toggleFolderProperitesButton').on('click', toggleFolderProperties);
 
-    if ($menu.attr('data-path')) {
-      var $dropDown = $menu.find('.dropdown-menu');
-      var $dropItemTags = $dropDown.find('#tagsAlternativeDirPath');
-      if ($dropItemTags.length === 0) {
-        $dropItemTags = $('<li id="tagsAlternativeDirPath">');
-        $dropDown.append($dropItemTags);
-      }
-      loadFolderMetaData($menu.attr('data-path'), null, $dropItemTags);
+    if (folderPropertiesOpened) {
+      $('#toggleFolderProperitesButton').addClass('buttonToggled');
+    } else {
+      $('#toggleFolderProperitesButton').removeClass('buttonToggled');
     }
-
-    $menu.css({
-      display: 'block',
-    });
   }
 
   function generateDirPath() {
@@ -341,23 +331,23 @@ define(function(require, exports, module) {
       'directoryOperations': $.i18n.t('ns.common:directoryOperations')
     }));
     $locationContent.find('.directoryTitle').each(function() {
-      loadFolderMetaData($(this).attr('key'), $(this).parent());
+      loadFolderMetaData($(this).data('path'), $(this).parent().parent().find('.directoryTagsArea'));
       $(this).click(function() {
-        navigateToDirectory($(this).attr('key'));
+        navigateToDirectory($(this).data('path'));
       }).droppable({
         greedy: 'true',
-        accept: '.fileTitleButton,.fileTile,.fileTileSelector',
+        accept: '.fileTitleButton,.fileTile,.fileTileSelector,.fileInfoArea',
         hoverClass: 'dropOnFolder',
         drop: function(event, ui) {
           ui.draggable.detach();
           var filePath = ui.draggable.attr('filepath');
           var fileName = TSCORE.TagUtils.extractFileName(filePath);
-          var targetDir = $(this).attr('key');
+          var targetDir = $(this).data('path');
           console.log('Moving file: ' + filePath + ' to ' + targetDir);
           var newFilePath = targetDir + TSCORE.dirSeparator + fileName;
           TSCORE.IO.renameFilePromise(filePath, newFilePath).then(function(success) {
             TSCORE.hideWaitingDialog();
-            TSPOSTIO.renameFile(filePath, newFilePath);
+            TSCORE.IOUtils.renameFileSuccess(filePath, newFilePath);
           }, function(err) {
             TSCORE.hideWaitingDialog();
             TSCORE.showAlertDialog(err);
@@ -368,10 +358,10 @@ define(function(require, exports, module) {
     });
     $locationContent.find('.dirButton').each(function() {
       $(this).click(function() {
-        navigateToDirectory($(this).attr('key'));
+        navigateToDirectory($(this).data('path'));
       }).droppable({
         greedy: 'true',
-        accept: '.fileTitleButton,.fileTile,.fileTileSelector',
+        accept: '.fileTitleButton,.fileTile,.fileTileSelector,.fileInfoArea',
         hoverClass: 'dropOnFolder',
         drop: function(event, ui) {
           ui.draggable.detach();
@@ -379,12 +369,12 @@ define(function(require, exports, module) {
           if ($(this).parent().parent().parent().hasClass('in')) {
             var filePath = ui.draggable.attr('filepath');
             var fileName = TSCORE.TagUtils.extractFileName(filePath);
-            var targetDir = $(this).attr('key');
+            var targetDir = $(this).data('path');
             console.log('Moving file: ' + filePath + ' to ' + targetDir);
             var newFilePath = targetDir + TSCORE.dirSeparator + fileName;
             TSCORE.IO.renameFilePromise(filePath, newFilePath).then(function(success) {
               TSCORE.hideWaitingDialog();
-              TSPOSTIO.renameFile(filePath, newFilePath);
+              TSCORE.IOUtils.renameFileSuccess(filePath, newFilePath);
             }, function(err) {
               TSCORE.hideWaitingDialog();
               TSCORE.showAlertDialog(err);
@@ -398,7 +388,7 @@ define(function(require, exports, module) {
 
   function handleDirCollapsion() {
     $('#locationContent').find('.accordion-heading').each(function() {
-      var key = $(this).attr('key');
+      var key = $(this).data('path');
       console.log('Entered Header for: ' + key);
       if (getDirectoryCollapsed(key)) {
         $(this).find('i').removeClass('fa-folder-open');
@@ -436,10 +426,6 @@ define(function(require, exports, module) {
     if (indexOfDots === (directoryPath.length - 3)) {
       directoryPath = TSCORE.TagUtils.extractParentDirectoryPath(directoryPath.substring(0, indexOfDots));
     }
-
-    //if (directoryPath.length < 2) {
-    //  return;
-    //}
 
     // Clearing search results on directory change
     TSCORE.clearSearchFilter();
@@ -496,12 +482,14 @@ define(function(require, exports, module) {
     console.log('Dir History: ' + JSON.stringify(directoryHistory));
     TSCORE.currentPath = directoryPath;
 
+    initFolderProperties();
+
     TSCORE.Meta.getDirectoryMetaInformation().then(function(dirList) {
       TSCORE.metaFileList = dirList;
       listDirectory(directoryPath);
     }).catch(function(error) {
-      console.log(error);
-      TSCORE.metaFileList = undefined;
+      console.log("Error getting meta information " + error);
+      TSCORE.metaFileList = [];
       listDirectory(directoryPath);
     });
   }
@@ -510,7 +498,8 @@ define(function(require, exports, module) {
     TSCORE.showLoadingAnimation();
     //TSCORE.PerspectiveManager.removeAllFiles();
     TSCORE.IO.listDirectoryPromise(dirPath).then(function(entries) {
-      TSPOSTIO.listDirectory(entries);
+      TSCORE.PerspectiveManager.updateFileBrowserData(entries);
+      TSCORE.updateSubDirs(entries)
       TSCORE.hideLoadingAnimation();
       console.log("Listing: " + dirPath + " done!");
 
@@ -522,7 +511,16 @@ define(function(require, exports, module) {
         });
       }
     }).catch(function(err) {
-      TSPOSTIO.errorOpeningPath(dirPath);
+      // Normalazing the paths
+      var dir1 = TSCORE.TagUtils.cleanTrailingDirSeparator(TSCORE.currentLocationObject.path);
+      var dir2 = TSCORE.TagUtils.cleanTrailingDirSeparator(dirPath);
+      // Close the current location if the its path could not be opened
+      if (dir1 === dir2) {
+        TSCORE.showAlertDialog($.i18n.t('ns.dialogs:errorOpeningLocationAlert'));
+        TSCORE.closeCurrentLocation();
+      } else {
+        TSCORE.showAlertDialog($.i18n.t('ns.dialogs:errorOpeningPathAlert'));
+      }      
       console.log("Error listing directory " + dirPath + " - " + err);
     });
 
@@ -535,21 +533,24 @@ define(function(require, exports, module) {
     // Context Menus
     $('body').on('contextmenu click', '.directoryActions', function() {
       TSCORE.hideAllDropDownMenus();
-      dir4ContextMenu = $(this).attr('key');
+      dir4ContextMenu = $(this).data('path');
       TSCORE.showContextMenu('#directoryMenu', $(this));
       return false;
     });
-    // Context menu for the tags in the file table and the file viewer
-    $('#directoryMenuReloadDirectory').click(function() {
+
+    $('#directoryMenuReloadDirectory').on('click', function() {
       navigateToDirectory(dir4ContextMenu);
     });
-    $('#directoryMenuCreateDirectory').click(function() {
+
+    $('#directoryMenuCreateDirectory').on('click', function() {
       showCreateDirectoryDialog(dir4ContextMenu);
     });
-    $('#directoryMenuRenameDirectory').click(function() {
+
+    $('#directoryMenuRenameDirectory').on('click', function() {
       showRenameDirectoryDialog(dir4ContextMenu);
     });
-    $('#directoryMenuDeleteDirectory').click(function() {
+
+    $('#directoryMenuDeleteDirectory').on('click', function() {
       var dlgConfirmMsgId = 'ns.dialogs:deleteDirectoryContentConfirm';
       if (TSCORE.Config.getUseTrashCan()) {
         dlgConfirmMsgId = 'ns.pro:trashDirectoryContentConfirm';
@@ -571,9 +572,138 @@ define(function(require, exports, module) {
         );
       });
     });
-    $('#directoryMenuOpenDirectory').click(function() {
+
+    $('#directoryMenuOpenDirectory').on('click', function() {
       TSCORE.IO.openDirectory(dir4ContextMenu);
     });
+
+    $('#locationSwitch').on('click', function() {
+      TSCORE.UI.stopGettingStartedTour();
+    });
+
+    $('#editFolderDescriptionButton').on('click', editFolderDescription);
+
+    $('#cancelEditFolderDescriptionButton').on('click', cancelEditFolderDescription);
+
+    $('#saveFolderDescriptionButton').on('click', saveFolderDescription);
+
+  }
+
+  function saveFolderTags(event) {
+    var newTags = $(this).val();
+    console.log("Tags: " + newTags);
+    TSCORE.Meta.loadFolderMetaDataPromise(TSCORE.currentPath).then(function(metaData) {
+      newTags = newTags.split(",");
+      metaData.tags = TSCORE.PRO.Directory.generateTags(newTags);
+      TSCORE.PRO.Directory.saveMetaData(metaData);
+    }).catch(function(err) {
+      console.warn("Error getting folder metadata, saving folder tags failed.");
+    });
+  }
+
+  function initFolderProperties() {
+    $('#folderPathProperty').val(TSCORE.currentPath);
+
+    $('#folderTagsProperty').off();
+    $("#folderTagsProperty").val("");
+    $('#folderTagsProperty').select2('data', null);
+
+    cancelEditFolderDescription();
+    $('#folderDescriptionPropertyRendered').empty();
+    $('#folderDescriptionPropertyRendered').css("height", "0");
+    $('#folderDescriptionPropertyRendered').css("padding", "0");
+    $('#folderDescriptionProperty').val("");
+    TSCORE.Meta.loadFolderMetaDataPromise(TSCORE.currentPath).then(function(metaData) {
+      var tags = '';
+      if (metaData.tags && metaData.tags.length > 0) {
+        metaData.tags.forEach(function(tag) {
+          tags = tags + "," + tag.title;
+        });
+        tags = tags.substring(1, tags.length);
+      }
+
+      $("#folderTagsProperty").val(tags);
+      $('#folderTagsProperty').select2({
+        multiple: true,
+        tags: TSCORE.Config.getAllTags(),
+        tokenSeparators: [',', ' '],
+        minimumInputLength: 1,
+        selectOnBlur: true,
+        formatSelectionCssClass: function(tag, container) {
+          var style = TSCORE.generateTagStyle(TSCORE.Config.findTag(tag.text));
+          if (style) {
+            $(container).parent().attr("style", style);
+          }
+        }
+      });
+
+      if (TSCORE.PRO && TSCORE.Config.getEnableMetaData()) { // TSCORE.Config.getWriteMetaToSidecarFile()
+        $('#folderTagsProperty').on('change', saveFolderTags);
+      } else {
+        $('#folderTagsProperty').attr('disabled', 'disabled');
+        // $('.select2-search-choice').css('padding-left', '4px !important');
+      }
+
+      if (metaData.description && metaData.description.length) {
+        $('#folderDescriptionPropertyRendered').css("height", "200px");
+        $('#folderDescriptionPropertyRendered').css("padding", "4px");
+        TSCORE.Utils.setMarkDownContent($('#folderDescriptionPropertyRendered'), metaData.description);
+        $('#folderDescriptionProperty').val(metaData.description);
+      }
+    }).catch(function(err) {
+      console.warn("Error getting folder metadata.");
+    });
+  }
+
+  // TODO handle the case: changing to next file/close while in edit mode
+  function editFolderDescription() {
+    if (TSCORE.PRO) {
+      if (TSCORE.Config.getEnableMetaData()) {
+        $('#folderDescriptionProperty').show();
+        $('#folderDescriptionProperty').css("height", "200px");
+        $('#folderDescriptionProperty').focus();
+        $('#folderDescriptionPropertyRendered').hide();
+        $('#editFolderDescriptionButton').hide();
+        $('#cancelEditFolderDescriptionButton').show();
+        $('#saveFolderDescriptionButton').show();
+      } else {
+        TSCORE.UI.showAlertDialog("In order to add or edit a description, you have to enable the use of hidden folders in the settings.");
+      }
+    } else {
+      TSCORE.UI.showAlertDialog("Editing the folder description is possible with the TagSpaces PRO");
+    }
+  }
+
+  function cancelEditFolderDescription() {
+    $('#folderDescriptionProperty').hide();
+    $('#folderDescriptionPropertyRendered').show();
+    $('#editFolderDescriptionButton').show();
+    $('#cancelEditFolderDescriptionButton').hide();
+    $('#saveFolderDescriptionButton').hide();
+  }
+
+  function saveFolderDescription() {
+    TSCORE.Meta.loadFolderMetaDataPromise(TSCORE.currentPath).then(function(metaData) {
+      var folderDescription = $('#folderDescriptionProperty').val();
+      metaData.description = folderDescription;
+      TSCORE.PRO.Directory.saveMetaData(metaData);
+      cancelEditFolderDescription();
+      TSCORE.Utils.setMarkDownContent($('#folderDescriptionPropertyRendered'), folderDescription);
+      $('#folderDescriptionPropertyRendered').css("height", "200px");
+    }).catch(function(err) {
+      console.warn("Error getting folder metadata.");
+    });
+  }
+
+  function toggleFolderProperties() {
+    if (folderPropertiesOpened) {
+      $('#folderPropertiesArea').hide();
+      $('#toggleFolderProperitesButton').removeClass('buttonToggled');
+    } else {
+      $('#folderPropertiesArea').show();
+      $('#toggleFolderProperitesButton').addClass('buttonToggled');
+    }
+    folderPropertiesOpened = !folderPropertiesOpened;
   }
 
   function createLocation() {
@@ -599,7 +729,6 @@ define(function(require, exports, module) {
   }
 
   function selectLocalDirectory() {
-
     TSCORE.IO.selectDirectory();
   }
 
@@ -755,10 +884,14 @@ define(function(require, exports, module) {
           $('#formLocationCreate').validator('validate');
         });
 
+        $('#dialogCreateFolderConnection').i18n();
+
         if (isCordova) {
-          $('#folderLocation').attr('placeholder', 'e.g.: DCIM/Camera');
+          $('#folderLocation').attr('placeholder', 'e.g., DCIM/Camera for Photos on Android ');
+        } else if (isChrome) {
+          $('#folderLocation').attr('placeholder', 'e.g., /home/chronos/user/Downloads/ for Chrome OS Downloads');
         } else if (isWeb) {
-          $('#folderLocation').attr('placeholder', 'e.g.: /owncloud/remote.php/webdav/');
+          $('#folderLocation').attr('placeholder', 'e.g., /owncloud/remote.php/webdav/');
         }
       }
 
@@ -770,7 +903,6 @@ define(function(require, exports, module) {
 
       $('#connectionName').val('');
       $('#folderLocation').val('');
-      $('#dialogCreateFolderConnection').i18n();
 
       var enableDefaultlocation = (TSCORE.Config.getDefaultLocation() === "");
       $('#defaultLocation').prop('checked', enableDefaultlocation);

@@ -246,7 +246,7 @@
     "createFile": "New Text File (txt)",
     "createMarkdown": "New Markdown File (md)",
     "createRichTextFile": "New Rich Text File (html)",
-    "createAudioFile": "New Voice Memo (wav/ogg)",
+    "createAudioFile": "Новая голосовая заметка (wav/ogg)",
     "createDirectory": "New Directory",
     "alertOpenLocatioFirst": "Please open a location first!",
     "exitApp": "Exit",
@@ -257,5 +257,8 @@
     "createNewButton": "New",
     "createNewButtonTitle": "Opens menu for creating new documents",
     "createNewDocument": "Create new document",
+    "geoTaggingNotPossible": "Geo Tagging not possible!",
+    "needProVersion": "You need the PRO version in order to use this functionality.",
+    "sizeInBytes": "bytes",
     "-": "-"
 }

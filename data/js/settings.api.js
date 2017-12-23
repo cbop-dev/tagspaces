@@ -182,16 +182,35 @@ define(function(require, exports, module) {
           exports.Settings.tagGroups.forEach(function(value) {
             if (value.key === 'SMR') {
               value.children.push({
-                  "type":          "smart",
-                  "title":         "geo-tag",
-                  "functionality": "geoTagging",
-                  "desciption":    "Add geo coordinates as a tag",
-                  "color":         "#4986e7",
-                  "textcolor":     "#ffffff"
+                "type": "smart",
+                "title": "geo-tag",
+                "functionality": "geoTagging",
+                "desciption": "Add geo coordinates as a tag",
+                "color": "#4986e7",
+                "textcolor": "#ffffff"
               });
             }
           });
         }
+      }
+      if (oldBuildNumber <= 20170203223208) {
+        addFileType({
+          'type': 'rtf',
+          'viewer': 'viewerRTF',
+          'editor': 'false'
+        });
+      }
+      if (oldBuildNumber <= 20170414113700) {
+        addFileType({
+          'type': 'flac',
+          'viewer': 'viewerAudioVideo',
+          'editor': 'false'
+        });
+        addFileType({
+          'type': 'mp3',
+          'viewer': 'viewerAudioVideo',
+          'editor': 'false'
+        });
       }
 
       saveSettings();
@@ -258,6 +277,14 @@ define(function(require, exports, module) {
   }
 
   //////////////////// getter and setter methods ///////////////////
+
+  function getAppFullName() {
+      var appFullName = "TagSpaces"; // TODO extend settings with app full name
+      if (TSCORE.PRO) {
+        appFullName = appFullName + " Pro";
+      }
+      return appFullName;
+  }
 
   function getPerspectiveExtensions() {
     var perspectives = [];
@@ -677,6 +704,19 @@ define(function(require, exports, module) {
     exports.Settings.keyBindings.openSearch = value;
   }
 
+  function getEnableGlobalKeyboardShortcuts() {
+    if (exports.Settings.enableGlobalKeyboardShortcuts === undefined) {
+      exports.Settings.enableGlobalKeyboardShortcuts = exports.DefaultSettings.enableGlobalKeyboardShortcuts;
+      saveSettings();
+    }
+    return exports.Settings.enableGlobalKeyboardShortcuts;
+  }
+
+  function setEnableGlobalKeyboardShortcuts(value) {
+
+    exports.Settings.enableGlobalKeyboardShortcuts = value;
+  }
+
   function getInterfaceLanguage() {
     if (exports.Settings.interfaceLanguage === undefined) {
       exports.Settings.interfaceLanguage = exports.DefaultSettings.interfaceLanguage;
@@ -818,8 +858,10 @@ define(function(require, exports, module) {
   }
 
   function setMaxSearchResultCount(value) {
-    if (isNaN(value) || value < 0 || value > 2000) {
-      value = 0;
+    if (isNaN(value) || value < 0) {
+      value = exports.DefaultSettings.maxSearchResultCount;
+    } else if (value > 2000) {
+      value = 2000;
     }
     exports.Settings.maxSearchResultCount = value;
   }
@@ -993,6 +1035,7 @@ define(function(require, exports, module) {
 
     exports.Settings.coloredFileExtensionsEnabled = value;
   }
+
   function getShowTagAreaOnStartup() {
     if (exports.Settings.showTagAreaOnStartup === undefined) {
       exports.Settings.showTagAreaOnStartup = exports.DefaultSettings.showTagAreaOnStartup;
@@ -1358,6 +1401,16 @@ define(function(require, exports, module) {
     console.log('Default settings loaded.');
   }
 
+  function restoreDefaultTagGroups() {
+    exports.DefaultSettings.tagGroups.forEach(function(value, index) {
+      exports.Settings.tagGroups.push(exports.DefaultSettings.tagGroups[index]);
+      exports.Settings.tagGroups[index].key = TSCORE.Utils.guid();
+    });
+    saveSettings();
+    TSCORE.generateTagGroups();
+    TSCORE.showSuccessDialog($.i18n.t('ns.dialogs:recreateDefaultSuccessMessage'));
+  }
+
   function loadSettingsLocalStorage() {
     try {
       var tmpSettings = JSON.parse(localStorage.getItem('tagSpacesSettings'));
@@ -1410,8 +1463,30 @@ define(function(require, exports, module) {
     }
   }
 
+  function exportTagGroups() {
+    var jsonFormat = '{ "appName": "' + TSCORE.Config.DefaultSettings.appName +
+      '", "appVersion": "' + TSCORE.Config.DefaultSettings.appVersion +
+      '", "appBuild": "' + TSCORE.Config.DefaultSettings.appBuild +
+      '", "settingsVersion": ' + TSCORE.Config.DefaultSettings.settingsVersion +
+      ', "tagGroups": ';
+
+    var getAllTags = [];
+    getAllTagGroupData().forEach(function(value, index) {
+      getAllTags.push(value);
+      getAllTags[index].key = TSCORE.Utils.guid();
+    });
+
+    var blob = new Blob([jsonFormat + JSON.stringify(getAllTags) + '}'], {
+      type: 'application/json'
+    });
+    var dateTimeTag = TSCORE.TagUtils.formatDateTime4Tag(new Date(), true);
+    TSCORE.Utils.saveAsTextFile(blob, 'tsm[' + dateTimeTag + '].json');
+    console.log('TagGroup Data Exported...');
+  }
+
   // Public API definition
   exports.upgradeSettings = upgradeSettings;
+  exports.getAppFullName = getAppFullName;
   exports.getActivatedPerspectives = getActivatedPerspectives;
   exports.setActivatedPerspectives = setActivatedPerspectives;
   exports.getExtensions = getExtensions;
@@ -1517,6 +1592,7 @@ define(function(require, exports, module) {
   exports.getTagGroupData = getTagGroupData;
   exports.getAllTagGroupData = getAllTagGroupData;
 
+  exports.exportTagGroups = exportTagGroups;
   exports.deleteTag = deleteTag;
   exports.deleteTagGroup = deleteTagGroup;
   exports.editTag = editTag;
@@ -1535,6 +1611,7 @@ define(function(require, exports, module) {
   exports.updateSettingMozillaPreferences = updateSettingMozillaPreferences;
   exports.loadSettingsLocalStorage = loadSettingsLocalStorage;
   exports.loadDefaultSettings = loadDefaultSettings;
+  exports.restoreDefaultTagGroups = restoreDefaultTagGroups;
   exports.saveSettings = saveSettings;
   exports.addTagGroup = addTagGroup;
   exports.setWriteMetaToSidecarFile = setWriteMetaToSidecarFile;
@@ -1555,4 +1632,6 @@ define(function(require, exports, module) {
   exports.setDefaultTagColor = setDefaultTagColor;
   exports.getDefaultTagTextColor = getDefaultTagTextColor;
   exports.setDefaultTagTextColor = setDefaultTagTextColor;
+  exports.getEnableGlobalKeyboardShortcuts = getEnableGlobalKeyboardShortcuts;
+  exports.setEnableGlobalKeyboardShortcuts = setEnableGlobalKeyboardShortcuts;
 });

@@ -1,6 +1,6 @@
 ![tagspaces logo](https://raw.github.com/tagspaces/tagspaces/master/data/assets/icon96.png)
 
-![tagspaces@travis](https://travis-ci.org/tagspaces/tagspaces.svg?branch=master)  [![Join the chat at https://gitter.im/tagspaces/tagspaces](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/tagspaces/tagspaces?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+![tagspaces@travis](https://travis-ci.org/tagspaces/tagspaces.svg?branch=master)  [![Join the chat at https://gitter.im/tagspaces/tagspaces](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/tagspaces/tagspaces?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Github All Releases](https://img.shields.io/github/downloads/tagspaces/tagspaces/total.svg)]()
 
 ## Introduction
 
@@ -25,7 +25,6 @@ To get updates you can:
     ./data/electron......contains the implementation and API for the Electron platform (Windows, Linux, OS X releases)
     ./data/mozilla.......contains the implementation and API of the Firefox Addon release of the application
     ./data/web...........contains the implementation and API of the WebDAV/ownCloud release of the application
-    ./data/node-webkit...contains the implementation and API for the NW.js platform (deprecated)
     ./data/templates.....contains HTML templates needed for the UI
     ./data/locales.......contains files need for the localisation of the application UI
     ./data/_locales......contains files need for the localisation of the Chrome extension UI
@@ -48,7 +47,7 @@ A full list of the changes is available in our [changelog](CHANGELOG.md)
 
 ## Documentation
 
-The native Windows, Linux and Mac OS X versions of `TagSpaces` are built with [node-webkit](https://github.com/rogerwang/node-webkit). node-webkit is an app runtime based on Chromium and node.js. You can write native apps in HTML and Javascript with node-webkit.
+The native Windows, Linux and Mac OS X versions of `TagSpaces` are built with [Electron](https://electron.atom.io/). Electron is an app runtime based on Chromium and node.js.
 
 ### How to run TagSpaces from the source code?
 Install [node.js, npm](http://nodejs.org/) and [git](http://git-scm.org/) for your platform (e.g. OS X, Windows or Linux).
@@ -72,14 +71,6 @@ Go to the data folder and install the TagSpaces extensions with bower:
 * Goto the folder: `cd tagspaces/data/`
 * Execute one of the following commands `electron .` or `npm start`
 
-#### Run the native Windows, Linux or Mac OS X application with NW.js
-Please note: The nw.js platform is not actively supported anymore.
-* Download [nw.js](https://github.com/nwjs/nw.js) prebuilt binaries for your system environment.
-* For Windows: copy `nw.exe, nw.pak, icudt.dll, ffmpegsumo.dll` to `tagspaces\data\node-webkit` directory.
-* For Linux: copy `nw, nw.pak, icudtl.dat, libffmpegsumo.so` to `tagspaces/data/node-webkit` directory. If you experience issue related to libudev.so.0 read the following [article](https://github.com/rogerwang/node-webkit/wiki/The-solution-of-lacking-libudev.so.0).
-* For Mac OS X: copy `node-webkit.app` to `tagspaces/data/node-webkit` directory.
-* Run the `nw` executable file.
-
 #### Run the Chrome/Chromium extension
 * Go to the chrome `Settings` and then to `Extension`
 * Enable the `Developer mode` checkbox in the upper right part of the screen
@@ -98,14 +89,14 @@ Please note: The nw.js platform is not actively supported anymore.
 
 * Start the addon by clicking the TagSpaces icon in the upper right area of Firefox
 
-#### How to setup the WebDAV edition?
+#### How to start the WebDAV edition for testing?
 There is a script called `webdavserver.js` located in the data/web , which can be started with:
 
     node data/web/webdavserver.js
 
 or
 
-    npm webdav
+    npm run webdav
     
     
 This command will start a local node.js based WebDAV server on `http://127.0.0.1:8000`. Open your browser and enter the following URL:
@@ -114,7 +105,7 @@ This command will start a local node.js based WebDAV server on `http://127.0.0.1
         
 You will be prompted for user credentials, which are username: `demo` and password: `demo` and now you should be able to work with the WebDAV version of TagSpaces.
 
-For setting up the WebDAV version on your server, please read [Self-hosted TagSpaces with WebDAV](http://www.tagspaces.org/webdav-edition/) from our blogs.
+For setting up the WebDAV version on your server, please read [Self-hosted TagSpaces with WebDAV](http://docs.tagspaces.org/selfhosting.html) from our blogs.
 
 ## License
 TagSpaces's source code is licensed under the AGPL (GNU Affero General Public License) Version 3, for the license text see [LICENSE](LICENSE) file.

@@ -1,4 +1,4 @@
-/* Copyright (c) 2012-2016 The TagSpaces Authors. All rights reserved.
+/* Copyright (c) 2012-2017 The TagSpaces Authors. All rights reserved.
  * Use of this source code is governed by a AGPL3 license that
  * can be found in the LICENSE file. */
 
@@ -10,21 +10,27 @@ define(function(require, exports, module) {
   console.log('Loading fileopener...');
 
   var TSCORE = require('tscore');
-  var TSPOSTIO = require("tspostioapi");
+  var moment = require('moment');
+
   var _openedFilePath;
   var _openedFileProperties;
   var _isFileOpened = false;
   var _isFileChanged = false;
   var _tsEditor;
   var generatedTagButtons;
-  $.fn.editableform.buttons = '<button type="submit" class="btn btn-primary editable-submit"><i class="fa fa-check fa-lg"></i></button><button type="button" class="btn editable-cancel"><i class="fa fa-times fa-lg"></i></button>';
+  var filePropertiesOpened = false;
+
+  $.fn.editableform.buttons = '<button type="submit" class="btn btn-primary btn-sm editable-submit"><i class="fa fa-check fa-lg"></i></button><button type="button" class="btn btn-sm editable-cancel"><i class="fa fa-times fa-lg"></i></button>';
   $.fn.editableform.template = '' +
-          '<form class="form-inline editableform flexMaxWidth">' +
-          '<div class="control-group flexLayout flexMaxWidth">' +
-          '<div class="flexLayout flexMaxWidth"><div class="editable-input flexMaxWidth"></div><div class="editable-buttons"></div></div>' +
-          '<div class="editable-error-block"></div>' +
-          '</div> ' +
-          '</form>';
+    '<form class="form-inline editableform flexMaxWidth">' +
+    '  <div class="control-group flexLayout flexMaxWidth">' +
+    '    <div class="flexLayout flexMaxWidth">' +
+    '      <div class="editable-input flexMaxWidth"></div>' +
+    '      <div class="editable-buttons"></div>' +
+    '    </div>' +
+    '    <div class="editable-error-block"></div>' +
+    '  </div> ' +
+    '</form>';
   var exitFullscreenButton = '<button id="exitFullScreen" class="btn btn-link" title="Exit fullscreen mode (ESC)"><span class="fa fa-remove"></span></button>';
   var _isEditMode = false; // If a file is currently opened for editing, this var should be true
 
@@ -73,47 +79,51 @@ define(function(require, exports, module) {
     $('#editDocument').on("click", function() {
       editFile(_openedFilePath);
     });
-    $('#saveDocument').on("click", function() {
-      saveFile();
-    });
+
+    $('#saveDocument').on("click", saveFile);
+
     $('#closeFile').on("click", function() {
-      closeFile();
+      closeFile(false);
     });
+
     $('#closeOpenedFile').on("click", function() {
-      closeFile();
+      closeFile(false);
     });
+
     $('#nextFileButton').on("click", function() {
       TSCORE.FileOpener.openFile(TSCORE.PerspectiveManager.getNextFile(_openedFilePath));
-      TSCORE.PerspectiveManager.selectFile(TSCORE.FileOpener.getOpenedFilePath());
     });
+
     $('#prevFileButton').on("click", function() {
       TSCORE.FileOpener.openFile(TSCORE.PerspectiveManager.getPrevFile(_openedFilePath));
-      TSCORE.PerspectiveManager.selectFile(TSCORE.FileOpener.getOpenedFilePath());
     });
+
     $('#reloadFile').on("click", function() {
       TSCORE.FileOpener.openFile(_openedFilePath);
     });
+
     $('#sendFile').on("click", function() {
       TSCORE.IO.sendFile(_openedFilePath);
     });
-    $('#suggestTagsFile').on("click", function() {
-      $('tagSuggestionsMenu').dropdown('toggle');
-    });
+
     $('#toggleFullWidthButton').on("click", TSCORE.toggleFullWidth);
+
     $('#fullscreenFile').on("click", switchToFullScreen);
-    $('#openProperties').on("click", showFilePropertiesDialog);
+
+    //$('#openProperties').on("click", showFilePropertiesDialog);
+
     $('#deleteFile').on("click", function() {
       TSCORE.showFileDeleteDialog(_openedFilePath);
     });
+
     $('#openNatively').on("click", function() {
       TSCORE.IO.openFile(_openedFilePath);
     });
+
     $('#openDirectory').on("click", function() {
       TSCORE.IO.openDirectory(TSCORE.TagUtils.extractParentDirectoryPath(_openedFilePath));
     });
-    $('#printFile').on("click", function() {
-      $('iframe').get(0).contentWindow.print();
-    });
+
     $('#renameFile').on("click", function() {
       if (_isFileChanged) {
         TSCORE.showAlertDialog($.i18n.t('ns.dialogs:operationNotPermittedInEditModeAlert'));
@@ -121,6 +131,7 @@ define(function(require, exports, module) {
         TSCORE.showFileRenameDialog(_openedFilePath);
       }
     });
+
     $('#duplicateFile').on("click", function() {
       var currentDateTime = TSCORE.TagUtils.formatDateTime4Tag(new Date(), true);
       var fileNameWithOutExt = TSCORE.TagUtils.extractFileNameWithoutExt(_openedFilePath);
@@ -139,6 +150,7 @@ define(function(require, exports, module) {
         TSCORE.showAlertDialog(err);
       });
     });
+
     $('#openFileInNewWindow').on("click", function() {
       if (isWeb) {
         if (location.port === '') {
@@ -150,19 +162,104 @@ define(function(require, exports, module) {
         window.open('file:///' + _openedFilePath);
       }
     });
-    $('#tagFile').on("click", function() {
-      if (_isFileChanged) {
-        TSCORE.showAlertDialog($.i18n.t('ns.dialogs:operationNotPermittedInEditModeAlert'));
+
+    $('#tagFile').on("click", tagFile);
+
+    $('#editFileDescriptionButton').on('click', editFileDescription);
+
+    $('#cancelEditFileDescriptionButton').on('click', cancelEditFileDescription);
+
+    $('#saveFileDescriptionButton').on('click', saveFileDescription);
+
+    $('#addTagsFileDescriptionButton').on('click', tagFile);
+
+    $('#toggleFileProperitesButton').on('click', toggleFileProperties);
+  }
+
+  // TODO handle the case: changing to next file/close while in edit mode
+  function editFileDescription() {
+    if (TSCORE.PRO) {
+      if (TSCORE.Config.getEnableMetaData() && TSCORE.Config.getWriteMetaToSidecarFile()) {
+        $('#fileDescriptionProperty').show();
+        $('#fileDescriptionProperty').css("height", "200px");
+        $('#fileDescriptionProperty').focus();
+        $('#fileDescriptionPropertyRendered').hide();
+        $('#editFileDescriptionButton').hide();
+        $('#cancelEditFileDescriptionButton').show();
+        $('#saveFileDescriptionButton').show();
       } else {
-        TSCORE.PerspectiveManager.clearSelectedFiles();
-        TSCORE.selectedFiles.push(_openedFilePath);
-        TSCORE.showAddTagsDialog();
+        TSCORE.UI.showAlertDialog("In order to add or edit a description, you have to enable the use of hidden folders in the settings.");
       }
-    });
+    } else {
+      TSCORE.UI.showAlertDialog("Editing the file description is possible with the TagSpaces PRO");
+    }
+  }
+
+  function cancelEditFileDescription() {
+    $('#fileDescriptionProperty').hide();
+    $('#fileDescriptionPropertyRendered').show();
+    $('#editFileDescriptionButton').show();
+    $('#cancelEditFileDescriptionButton').hide();
+    $('#saveFileDescriptionButton').hide();
+  }
+
+  function saveFileDescription() {
+    var fileDescription = $('#fileDescriptionProperty').val();
+    TSCORE.Utils.setMarkDownContent($('#fileDescriptionPropertyRendered'), fileDescription);
+    $('#fileDescriptionPropertyRendered').css("height", "200px");
+    TSCORE.Meta.addMetaDescriptionToFile(_openedFileProperties.path, fileDescription);
+    cancelEditFileDescription();
+  }
+
+  function setFileProperties(fileProperties) {
+    cancelEditFileDescription();
+    _openedFileProperties = fileProperties;
+    $('#fileNameProperty').val(TSCORE.TagUtils.extractFileName(_openedFileProperties.path));
+    $('#filePathProperty').val(TSCORE.TagUtils.extractContainingDirectoryPath(_openedFileProperties.path));
+    $('#fileSizeProperty').val(TSCORE.TagUtils.formatFileSize(_openedFileProperties.size, true) + " / " + _openedFileProperties.size + " " + $.i18n.t('ns.common:sizeInBytes'));
+
+    $('#timeFileChangedFromNow').text(moment(_openedFileProperties.lmdt).fromNow());
+    $('#fileLMDTProperty').val(moment(_openedFileProperties.lmdt).format('YYYY-MM-DD hh:mm:ss'));
+    //$('#fileLMDTProperty').val(new Date(_openedFileProperties.lmdt).toISOString().substring(0, 19).split('T').join(' '));
+    $('#fileLMDTProperty').attr("title", new Date(_openedFileProperties.lmdt));
+
+    var fileDescription = TSCORE.Meta.getDescriptionFromMetaFile(_openedFileProperties.path);
+
+    $('#fileDescriptionPropertyRendered').empty();
+    $('#fileDescriptionProperty').val("");
+    if (fileDescription && fileDescription.length > 0) {
+      $('#fileDescriptionPropertyRendered').css("height", "200px");
+      $('#fileDescriptionPropertyRendered').css("padding", "4px");
+      TSCORE.Utils.setMarkDownContent($('#fileDescriptionPropertyRendered'), fileDescription);
+      $('#fileDescriptionProperty').val(fileDescription);
+    } else {
+      $('#fileDescriptionPropertyRendered').css("height", "0");
+      $('#fileDescriptionPropertyRendered').css("padding", "0");
+    }
+  }
+
+  function tagFile() {
+    if (_isFileChanged) {
+      TSCORE.showAlertDialog($.i18n.t('ns.dialogs:operationNotPermittedInEditModeAlert'));
+    } else {
+      TSCORE.PerspectiveManager.clearSelectedFiles();
+      TSCORE.selectedFiles.push(_openedFilePath);
+      TSCORE.showAddTagsDialog();
+    }
+  }
+
+  function toggleFileProperties() {
+    if (filePropertiesOpened) {
+      $('#filePropertiesArea').hide();
+      $('#toggleFileProperitesButton').removeClass('buttonToggled');
+    } else {
+      $('#filePropertiesArea').show();
+      $('#toggleFileProperitesButton').addClass('buttonToggled');
+    }
+    filePropertiesOpened = !filePropertiesOpened;
   }
 
   function isFileChanged() {
-
     return _isFileChanged;
   }
 
@@ -173,29 +270,24 @@ define(function(require, exports, module) {
       $fileExt.text($fileExt.text() + '*');
       $fileTitle.editable('disable');
       $('#fileTags').find('button').prop('disabled', true);
-      $('#addTagFileViewer').prop('disabled', true);
     }
     if (!value) {
       $fileExt.text(TSCORE.TagUtils.extractFileExtension(_openedFilePath));
       $fileTitle.editable('enable');
       $('#fileTags').find('button').prop('disabled', false);
-      $('#addTagFileViewer').prop('disabled', false);
     }
     _isFileChanged = value;
   }
 
   function isFileEdited() {
-
     return _isEditMode;
   }
 
   function isFileOpened() {
-
     return _isFileOpened;
   }
 
   function getOpenedFilePath() {
-
     return _openedFilePath;
   }
 
@@ -242,19 +334,11 @@ define(function(require, exports, module) {
   }
 
   function openFileOnStartup(filePath) {
-    //TSCORE.Config.setLastOpenedLocation(undefined);
+    console.log("Opening file from command line: " + filePath);
 
     // quick and dirty solution, should use flag later
     TSCORE.toggleFullWidth();
     TSCORE.FileOpener.openFile(filePath);
-
-    /*var parentFolderPath = TSCORE.TagUtils.extractContainingDirectoryPath(filePath);
-     TSCORE.IO.listDirectoryPromise(parentFolderPath).then(function(entries) {
-     TSPOSTIO.listDirectory(entries);
-     }).catch(function(err) {
-     TSPOSTIO.errorOpeningPath();
-     });*/
-
   }
 
   function openFile(filePath, editMode) {
@@ -273,7 +357,6 @@ define(function(require, exports, module) {
     }
 
     $('#fileTags').find('button').prop('disabled', false);
-    $('#addTagFileViewer').prop('disabled', false);
 
     _isEditMode = false;
     _isFileChanged = false;
@@ -347,9 +430,11 @@ define(function(require, exports, module) {
         });
       }
     }
-    initTagSuggestionMenu(filePath);
+
     // Clearing file selection on file load and adding the current file path to the selection
     TSCORE.PerspectiveManager.clearSelectedFiles();
+    TSCORE.PerspectiveManager.selectFile(TSCORE.FileOpener.getOpenedFilePath());
+
     TSCORE.selectedFiles.push(filePath);
     _isFileOpened = true;
     TSCORE.openFileViewer();
@@ -369,14 +454,9 @@ define(function(require, exports, module) {
       reloadFile();
       return false;
     });
-    /*Mousetrap.unbind(TSCORE.Config.getDeleteDocumentKeyBinding());
-     Mousetrap.bind(TSCORE.Config.getDeleteDocumentKeyBinding(), function() {
-     TSCORE.showFileDeleteDialog(_openedFilePath);
-     return false;
-     });*/
     Mousetrap.unbind(TSCORE.Config.getPropertiesDocumentKeyBinding());
     Mousetrap.bindGlobal(TSCORE.Config.getPropertiesDocumentKeyBinding(), function() {
-      showFilePropertiesDialog();
+      toggleFileProperties();
       return false;
     });
     Mousetrap.unbind(TSCORE.Config.getEditDocumentKeyBinding());
@@ -386,20 +466,10 @@ define(function(require, exports, module) {
     });
 
     Mousetrap.bindGlobal("esc", leaveFullScreen);
-
-    /*if (isFullScreen()) {
-      switchToFullScreen();
-    }*/
-  }
-
-  function setFileProperties(fileProperties) {
-
-    _openedFileProperties = fileProperties;
   }
 
   function updateEditorContent(fileContent) {
     console.log('Updating editor');
-    // with data: "+fileContent);
     _tsEditor.setContent(fileContent);
   }
 
@@ -437,15 +507,10 @@ define(function(require, exports, module) {
   function saveFile() {
     console.log('Save current file: ' + _openedFilePath);
     var content = _tsEditor.getContent();
-    /*var title = TSCORE.TagUtils.extractTitle(_openedFilePath);
-     if(title.length < 1 && content.length > 1) {
-     title = content.substring(0,content.indexOf("\n"));
-     if(title.length > 100) {
-     title = title.substring(0,99);
-     }
-     }*/
-    TSCORE.IO.saveTextFilePromise(_openedFilePath, content).then(function(isNewFile) {
-      TSPOSTIO.saveTextFile(_openedFilePath, isNewFile);
+    TSCORE.IO.saveTextFilePromise(_openedFilePath, content, true).then(function(isNewFile) {
+      //TSCORE.PerspectiveManager.refreshFileListContainer();
+      TSCORE.showSuccessDialog("File saved successfully."); // TODO translate
+      TSCORE.FileOpener.setFileChanged(false);
     }, function(error) {
       TSCORE.hideLoadingAnimation();
       console.error("Save to file " + _openedFilePath + " failed " + error);
@@ -523,6 +588,8 @@ define(function(require, exports, module) {
     });
   }
 
+  // TODO refactor or remove, move add / remove tags dialog
+  /*
   function initTagSuggestionMenu(filePath) {
     var tags = TSCORE.TagUtils.extractTags(filePath);
     var suggTags = TSCORE.TagUtils.suggestTags(filePath);
@@ -574,31 +641,7 @@ define(function(require, exports, module) {
         })))); // jshint ignore:line
       }
     }
-  }
-
-  function showFilePropertiesDialog() {
-    require(['text!templates/FilePropertiesDialog.html'], function(uiTPL) {
-      if ($('#dialogFileProperties').length < 1) {
-        var uiTemplate = Handlebars.compile(uiTPL);
-        $('body').append(uiTemplate());
-      }
-      $('#filePathProperty').val(_openedFileProperties.path);
-      $('#fileSizeProperty').val(_openedFileProperties.size);
-      $('#fileLMDTProperty').val(new Date(_openedFileProperties.lmdt));
-      var $fileTagsProperty = $('#fileTagsProperty');
-      $fileTagsProperty.children().remove();
-      $fileTagsProperty.append(generatedTagButtons);
-      $fileTagsProperty.find('.caret').hide();
-      // hiding the dropdown trigger
-      $('#dialogFileProperties').i18n().modal({
-        backdrop: 'static',
-        show: true
-      });
-      $('#dialogFileProperties').draggable({
-        handle: ".modal-header"
-      });
-    });
-  }
+  } */
 
   // Public API definition
   exports.initUI = initUI;

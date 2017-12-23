@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <!-- Copyright (c) 2012-2016 The TagSpaces Authors. All rights reserved. Use of this
+  <!-- Copyright (c) 2012-2017 The TagSpaces Authors. All rights reserved. Use of this
   source code is governed by a AGPL3 license that can be found in the LICENSE file. -->
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -114,7 +114,7 @@
           </a><br>
           <hr class="contactUsSeparator" />
           <a class="btn btn-link" data-i18n="[title]ns.common:suggestNewFeaturesTooltip"
-             href="https://tagspaces.uservoice.com/forums/213931-general" id="openUservoice">
+             href="https://trello.com/b/TGeG5bi9" id="openUservoice">
             <span class="fa-stack"><i style="color: lightgray" class="fa fa-circle fa-stack-base fa-stack-2x"></i>
             <i class="fa fa-bullhorn fa-stack-1x" style=""></i></span>&nbsp;&nbsp;
             <span data-i18n="ns.common:suggestNewFeatures"></span>
@@ -181,7 +181,7 @@
           <input type="radio" name="options">&nbsp;<i class="fa fa-folder"></i>
         </label>
         <label class="btn btn-default" id="contactUs" data-i18n="[title]ns.common:switchToContactUsTooltip">
-          <input type="radio" name="options">&nbsp;<i class="fa fa-info-circle"></i>
+          <input type="radio" name="options">&nbsp;<i class="fa fa-commenting"></i>
         </label>
       </div>
       <button class="btn btn-link" style="margin-left: 20px;" data-i18n="[title]ns.common:openSettingTooltip;" id="openOptions">
@@ -208,11 +208,44 @@
             <ul class="dropdown-menu pull-right" id="perspectiveSwitcher"></ul>
           </div>
         </div>
+        <div class="form" id="folderPropertiesArea">
+          <div class="row">
+            <div class="col-xs-12">
+              <div class="form-group">
+                <label class="control-label" for="folderPathProperty" data-i18n="ns.dialogs:folderPropertiesPath"></label>
+                <input class="form-control uneditable-input input-sm" readonly="true" type="text" name="folderPathProperty" id="folderPathProperty" />
+              </div>
+            </div>
+            <!--div class="col-xs-5">
+              <div class="form-group">
+                <label class="control-label" for="folderPerspective" data-i18n="ns.dialogs:folderPerspective"></label>
+                <select class="form-control" name="folderPerspective" id="folderPerspective" ></select>
+              </div>
+            </div-->
+          </div>
+          <div class="row">
+            <div class="col-xs-12">
+              <div class="form-group">
+                <label class="control-label" for="folderTagsProperty" data-i18n="ns.dialogs:folderPropertiesTags"></label>
+                <input class="form-control" type="text" name="folderTagsProperty" id="folderTagsProperty" value="" autocomplete="off" data-i18n="[placeholder]ns.dialogs:tagOperationTagsPlaceholder"/>
+                <!--p class="help-block" data-i18n="ns.dialogs:editTagNamesRestrictionsHelp"></p-->
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="control-label" for="folderDescriptionProperty" data-i18n="ns.dialogs:directoryPropertiesDescription;[title]ns.dialogs:folderPropertiesDescriptionTitle"></label>
+            <button class="btn btn-link" id="editFolderDescriptionButton"><i class="fa fa-pencil fa-fw"></i>&nbsp;<span data-i18n="ns.common:edit"></span></button>
+            <div id="folderDescriptionPropertyRendered" class="markdown-content" data-i18n="[title]ns.dialogs:descriptionSupportMarkDown"><span style="color: b7b7b7;">In the PRO version you can add here description for this folder.</span></div>
+            <textarea class="form-control uneditable-input input-sm" rows="3" type="text" name="folderDescriptionProperty" id="folderDescriptionProperty" data-i18n="[placeholder]ns.dialogs:descriptionSupportMarkDown"></textarea>
+          </div>
+          <button class="btn btn-primary btn-sm" id="saveFolderDescriptionButton" aria-hidden="true"><span data-i18n="ns.dialogs:confirmSaveButton"></span></button>
+          <button class="btn btn-default btn-sm" id="cancelEditFolderDescriptionButton" aria-hidden="true"><span data-i18n="ns.dialogs:cancel"></span></button>
+        </div>
         <div class="flexLayout" style="min-height: 40px;">
           <button type="button" class="btn btn-link" id="showNewFileDialog" data-toggle="dropdown" data-i18n="[title]ns.common:toggleLeftPanelTooltip">
             <i class="fa fa-plus fa-lg"></i>&nbsp;&nbsp;<span data-i18n="ns.common:createNewButton;[title]ns.common:createNewButtonTitle;"></span>
           </button>
-          <ul class="dropdown-menu" id="newFileMenu" style="top: 35px; left: 5px">
+          <ul class="dropdown-menu" id="newFileMenu" style="left: 5px">
             <li class="dropdown-header">
               <button type="button" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
               <span data-i18n="ns.common:createNewDocument"></span></li>
@@ -268,7 +301,7 @@
     <div class="row2 appBackgroundTile" id="viewContainers"></div>
   </div>
 
-  <div class="col3" style="display: none;">
+  <div class="col3">
     <div class="row1">
       <nav class="navbar navbar-default" role="navigation">
         <div class="btn-toolbar flexLayout" >
@@ -319,15 +352,6 @@
               <li class="noWrap"><a id="openDirectory" data-i18n="[title]ns.common:openContainingFolderTooltip">
                 <i class="fa fa-folder-open fa-fw"></i>
                 &nbsp;<span data-i18n="ns.common:openContainingFolder"></span></a></li>
-              <!--li class="noWrap"><a id="closeFile" data-i18n="[title]ns.common:closeFileTooltip">
-                <i class="fa fa-times fa-fw"></i>
-                &nbsp;<span data-i18n="ns.common:closeFile"></span>
-                <span class="pull-right label label-default keyShortcut">Esc</span></a></li-->
-              <li class="divider"></li>
-              <li class="noWrap"><a id="openProperties" data-i18n="[title]ns.common:filePropertiesTooltip">
-                <i class="fa fa-briefcase fa-fw"></i>
-                &nbsp;<span data-i18n="ns.common:fileProperties"></span>
-                <span class="pull-right label label-default keyShortcut">Alt+Enter</span></a></li>
             </ul>
           </div>
           <div class="flexMaxWidth flexLayout">
@@ -338,11 +362,9 @@
           </button>
         </div>
         <div id="tagsContainer" class="ui-droppable flexLayout">
-          <button id="addTagFileViewer" type="button" data-i18n="[title]ns.common:addTags"
-                  class="btn btn-small extTagButton dropdown-toggle" data-toggle="dropdown">
-            <i class="fa fa-plus-square"></i>
+          <button class="btn btn-link" data-i18n="[title]ns.common:filePropertiesTooltip" id="toggleFileProperitesButton">
+            <i class="fa fa-info fa-lg"></i>
           </button>
-          <ul class="dropdown-menu" id="tagSuggestionsMenu"></ul>
           <span id="fileTags" class="flexMaxWidth"></span>
           <div id="fileViewerMainToolbar" class="btn-group">
             <button class="btn btn-link pull-right" data-i18n="[title]ns.common:openNextFileTooltip" id="nextFileButton">
@@ -362,15 +384,53 @@
             </button>
           </div>
         </div>
+        <div class="form" id="filePropertiesArea">
+          <div class="row">
+            <div class="col-xs-7">
+              <div class="form-group">
+                <label class="control-label" for="filePathProperty" data-i18n="ns.dialogs:filePropertiesPath"></label>
+                <input class="form-control uneditable-input input-sm" readonly="true" type="text" name="filePathProperty" id="filePathProperty" />
+              </div>
+            </div>
+            <div class="col-xs-5">
+              <div class="form-group">
+                <label class="control-label" for="fileSizeProperty" data-i18n="ns.dialogs:filePropertiesSize"></label>
+                <input class="form-control uneditable-input input-sm" readonly="true" type="text" name="fileSizeProperty" id="fileSizeProperty" />
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-xs-7">
+              <div class="form-group">
+                <label class="control-label" for="fileNameProperty" data-i18n="ns.dialogs:filePropertiesName"></label>
+                <input class="form-control uneditable-input input-sm" readonly="true" type="text" name="fileNameProperty" id="fileNameProperty" />
+              </div>
+            </div>
+            <div class="col-xs-5">
+              <div class="form-group">
+                <label class="control-label" for="fileLMDTProperty"><span data-i18n="ns.dialogs:filePropertiesLMDT"></span>&nbsp;<span id="timeFileChangedFromNow"></span></label>
+                <input class="form-control uneditable-input input-sm" readonly="true" type="text" name="fileLMDTProperty" id="fileLMDTProperty" />
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="control-label" for="fileDescriptionProperty" data-i18n="ns.dialogs:filePropertiesDescription;[title]ns.dialogs:filePropertiesDescriptionTitle"></label>
+            <button class="btn btn-link" id="editFileDescriptionButton"><i class="fa fa-pencil fa-fw"></i>&nbsp;<span data-i18n="ns.common:edit"></span></button>
+            <button class="btn btn-link pull-right" id="addTagsFileDescriptionButton"><i class="fa fa-tag fa-fw"></i>&nbsp;<span data-i18n="ns.common:addRemoveTags"></span></button>
+            <div id="fileDescriptionPropertyRendered" class="markdown-content" data-i18n="[title]ns.dialogs:descriptionSupportMarkDown"></div>
+            <textarea class="form-control uneditable-input input-sm" rows="3" type="text" name="fileDescriptionProperty" id="fileDescriptionProperty" data-i18n="[placeholder]ns.dialogs:descriptionSupportMarkDown"></textarea>
+          </div>
+          <button class="btn btn-primary btn-sm" id="saveFileDescriptionButton" aria-hidden="true"><span data-i18n="ns.dialogs:confirmSaveButton"></span></button>
+          <button class="btn btn-default btn-sm" id="cancelEditFileDescriptionButton" aria-hidden="true"><span data-i18n="ns.dialogs:cancel"></span></button>
+        </div>
       </nav>
     </div>
     <div class="row2" id="viewer" allowfullscreen></div>
   </div>
-
 </main>
 
 <!-- Dialogs -->
-<div class="modal fullScreenMobile" id="dialogAboutTS" tabindex="-1" role="dialog" aria-hidden="true">
+<div id="dialogAboutTS" class="modal fullScreenMobile" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
@@ -390,7 +450,21 @@
   </div>
 </div>
 
-<div class="modal" id="dialogLostConnection" tabindex="-1" role="dialog" aria-hidden="true">
+<div id="dialogChromeFileAccessInfo" class="modal" tabindex="-1" role="dialog" aria-hidden="true" >
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-body">
+        <div data-i18n="ns.dialogs:accessFileURLNotAllowedAlert"></div>
+        <img src="">
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true"><span data-i18n="ns.dialogs:ok"></span></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="dialogLostConnection" class="modal" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
@@ -409,7 +483,7 @@
   </div>
 </div>
 
-<div class="modal fullScreenMobile" id="dialogShortcuts" tabindex="-1" role="dialog" aria-hidden="true">
+<div id="dialogShortcuts" class="modal fullScreenMobile" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
@@ -485,8 +559,7 @@
   </div>
 </div>
 
-<!-- Audio Recording Dialog -->
-<div class="modal fullScreenMobile" id="audioRecordingDialog" tabindex="-1" role="dialog" aria-hidden="true">
+<div id="audioRecordingDialog" class="modal fullScreenMobile" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
@@ -568,7 +641,7 @@
   </div>
 </div>
 
-<div class="modal fullScreenMobile" id="aboutLicenseModal" tabindex="-1" role="dialog" aria-hidden="true">
+<div id="aboutLicenseModal" class="modal fullScreenMobile" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
@@ -582,7 +655,7 @@
         <button class="btn btn-default pull-left" id="eulaDialogBack" title="Go Back">
           <span data-i18n="ns.dialogs:cancel"></span>
         </button>
-        <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true">
+        <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true" id="acceptLicenseButton">
           <span data-i18n="ns.dialogs:ok"></span>
         </button>
       </div>
@@ -661,8 +734,7 @@
           <div class="form-group">
             <label class="control-label" for="renamedFileName" data-i18n="ns.dialogs:renameNewFileName"></label>*
             <input class="form-control" pattern='^([^#/\\:*?<>|"]){1,}$' type="text" name="renamedFileName"
-                   id="renamedFileName"
-                   data-i18n="[data-error]ns.dialogs:fileNameHelp" required/>
+                   id="renamedFileName" data-i18n="[data-error]ns.dialogs:fileNameHelp" required/>
             <p class="help-block with-errors"></p>
           </div>
         </form>
@@ -689,7 +761,7 @@
         <h4 data-i18n="ns.dialogs:editTagTitle"></h4>
         <div id="tabsEditTag">
           <ul class="nav nav-tabs" style="margin-bottom: 15px; border-bottom: 1px solid lightgray;">
-            <li id="tabFormEdit"><a href="#formEditTag" data-toggle="tab" class="optionsTitle" data-i18n="ns.dialogs:generalTab"></a></li>
+            <li id="tabFormEdit"><a href="#plainEditorTab" data-toggle="tab" class="optionsTitle" data-i18n="ns.dialogs:generalTab"></a></li>
             <li id="tabDateCalendar"><a href="#dateCalendarTab" data-toggle="tab" class="optionsTitle" data-i18n="ns.dialogs:dateCalendarTab"></a></li>
             <li id="tabDateTimeCalendar"><a href="#dateTimeCalendarTab" data-toggle="tab" class="optionsTitle" data-i18n="ns.dialogs:dateTimeTab"></a></li>
             <li id="tabDateRange"><a href="#dateRangeTab" data-toggle="tab" class="optionsTitle" data-i18n="ns.dialogs:dateRangeTab"></a></li>
@@ -698,7 +770,7 @@
         </div>
       </div>
       <div class="modal-body form tab-content">
-        <div class="tab-pane active" id="formEditTag"></div>
+        <div class="tab-pane active" id="plainEditorTab"></div>
         <div class="tab-pane" id="dateCalendarTab">
           <div class="date-time-calendar">
             <div class="form-group">
@@ -733,10 +805,10 @@
           </div>
         </div>
         <div class="form-group">
-          <form role="form" data-toggle="validator">
+          <form role="form" data-toggle="validator" id="formEditTag">
             <div class="form-group">
               <label class="control-label" for="newTagName" data-i18n="ns.dialogs:editTagNewName"></label>
-              <input class="form-control" type="text" name="newTagName" id="newTagName"
+              <input class="form-control" pattern="^[^#/\\ \[\]]{1,}$" type="text" name="newTagName"  id="newTagName"
                      data-i18n="[data-error]ns.dialogs:editTagNamesRestrictionsHelp" required/>
               <p class="help-block with-errors"></p>
             </div>
@@ -803,14 +875,14 @@
         <form role="form" data-toggle="validator" id="formEditInTreeTag">
           <div class="form-group">
             <label class="control-label" for="tagInTreeName" data-i18n="ns.dialogs:editTagMasterName"></label>*
-            <input class="form-control" pattern="^([^\ #/\\]){1,}$" type="text" name="tagInTreeName" id="tagInTreeName"
+            <input class="form-control" data-minlength="1" pattern="^[^\\\.#/ \[\]]{1,}$" type="text" name="tagInTreeName" id="tagInTreeName"
                    data-i18n="[data-error]ns.dialogs:editTagNamesRestrictionsHelp" required/>
             <p class="help-block with-errors"></p>
           </div>
           <div class="form-group">
             <label class="control-label" for="tagInTreeKeyBinding"
                    data-i18n="ns.dialogs:editTagInTreeKeyBinding"></label>
-            <input class="form-control" pattern="^([+\ A-z0-9]){1,}$" type="text" name="tagInTreeKeyBinding"
+            <input class="form-control" data-minlength="1" pattern="^[^\\#/]{1,}$" type="text" name="tagInTreeKeyBinding"
                    id="tagInTreeKeyBinding"/>
             <p class="help-block with-errors"></p>
             <p class="help-block" data-i18n="ns.dialogs:editTagInTreeKeyBindingHelp"></p>
@@ -881,7 +953,7 @@
         <form role="form" data-toggle="validator" id="formAddTags">
           <div class="form-group">
             <label class="control-label" for="newTagTitle" data-i18n="ns.dialogs:addTagsToGroupTags"></label>
-            <input pattern="^([^#/\\ ]){1,}$" class="form-control" type="text" name="newTagTitle" id="newTagTitle"
+            <input pattern="^[^#/\\ \[\]]{1,}$" class="form-control" type="text" name="newTagTitle" id="newTagTitle"
                    data-i18n="[placeholder]ns.dialogs:addTagsToGroupTagsPlaceholder;[data-error]ns.dialogs:editTagNamesRestrictionsHelp"/>
             <p class="help-block with-errors"></p>
           </div>
@@ -1065,7 +1137,7 @@
   </div>
 </div>
 
-<div id="waitingDialog" class="modal" style="z-index: 99999" tabindex="-1">
+<div id="waitingDialog" class="modal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
@@ -1073,7 +1145,7 @@
         <h4><span id="waitingHeader"></span></h4>
       </div>
       <div class="modal-body">
-        <div class="waitingAnimation" style="display: block; text-align: center;">
+        <div class="waitingAnimation">
           <div class="spinner">
             <div class="bounce1"></div>
             <div class="bounce2"></div>
@@ -1114,7 +1186,7 @@
   </div>
 </div>
 
-<div class="modal" id="whatsNewModal" tabindex="-1" role="dialog" aria-hidden="true">
+<div id="whatsNewModal" class="modal" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
@@ -1210,12 +1282,6 @@
     <li class="divider"></li>
     <li><a id="tagGroupMenuCreateNewTag" data-i18n="[title]ns.common:addTagsTooltip">
       <i class="fa fa-tag fa-lg fa-fw"></i>&nbsp;<span data-i18n="ns.common:addTags"></span></a></li>
-    <!--li><a id="tagGroupMenuImportTags" data-i18n="[title]ns.common:importTagsTooltip">
-      <span class="fa-stack fa-fw">
-        <i class="fa fa-tag fa-stack-2x fa-fw"></i><i class="fa fa-arrow-right fa-stack-1x fa-inverse"></i>
-      </span>&nbsp;<span data-i18n="ns.common:importTags"></span></a></li-->
-    <!--li><a id="tagGroupMenuCreateTagGroup" data-i18n="[title]ns.common:createTagGroupTooltip">
-      <i class="fa fa-tags fa-lg fa-fw"></i>&nbsp;<span data-i18n="ns.common:createTagGroup"></span></a></li-->
     <li><a id="tagGroupMenuMoveUp" data-i18n="[title]ns.common:moveTagGroupUpTooltip">
       <i class="fa fa-arrow-up fa-lg fa-fw"></i>&nbsp;<span data-i18n="ns.common:moveTagGroupUp"></span></a></li>
     <li><a id="tagGroupMenuMoveDown" data-i18n="[title]ns.common:moveTagGroupDownTooltip">
@@ -1300,15 +1366,5 @@
 <input type="file" id="addFileInput" style="display: none;"/>
 <input type="file" id="jsonImportFileInput" style="display: none;"/>
 
-<div id="locationTagTreeMenu" class="dropdown clearfix">
-  <ul class="dropdown-menu" role="menu" style="display:block;position:static;">
-    <li class="dropdown-header">
-        <button class="close" data-i18n="[title]ns.common:closeTooltip">&times;</button>
-      <span data-i18n="ns.common:tagOperations"></span></li>
-    <li class="divider"></li>
-    <li><a id="locationTagTreeMenuDeleteTag" data-i18n="[title]ns.common:deleteTagFromTagGroupTooltip">
-      <i class="fa fa-trash-o fa-fw"></i>&nbsp;<span data-i18n="ns.common:deleteTagFromTagGroup"></span></a></li>
-  </ul>
-</div>
 </body>
 </html>

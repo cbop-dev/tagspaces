@@ -17,10 +17,9 @@ define(function(require, exports, module) {
   // chrome.browserAction.setBadgeText({text: '9999'});
 
   // changing the name of the app
-  $("#logo").text("TagSpaces Lite");
+  //$("#logo").text("TagSpaces Lite");
 
   var TSCORE = require("tscore");
-  var TSPOSTIO = require("tspostioapi");
   var saveAs = require("libs/filesaver.js/FileSaver.min");
 
   var dataBegin = "<script>addRow(";
@@ -32,7 +31,11 @@ define(function(require, exports, module) {
   function checkAccessFileURLAllowed() {
     chrome.extension.isAllowedFileSchemeAccess(function(isAllowedAccess) {
       if (!isAllowedAccess) {
-        TSCORE.showAlertDialog($.i18n.t("ns.dialogs:accessFileURLNotAllowedAlert"));
+        $('#dialogChromeFileAccessInfo img').attr('src', 'chromium/ChromeAllowAccessFileURLs.png');
+        $('#dialogChromeFileAccessInfo').modal({
+          backdrop: 'static',
+          show: true
+        });
       }
     });
   }
@@ -75,7 +78,7 @@ define(function(require, exports, module) {
         type: 'GET'
       })
       .done(function(data) {
-        TSPOSTIO.checkNewVersion(data);
+        TSCORE.updateNewVersionData(data);
       })
       .fail(function(data) {
         console.log("AJAX failed " + data);
@@ -93,7 +96,7 @@ define(function(require, exports, module) {
     TSCORE.showAlertDialog("Creating directory tree not supported.");
     //var directoyTree = generateDirectoryTree(dirPath);
     //console.log(JSON.stringify(directoyTree));
-    //TSPOSTIO.createDirectoryTree(directoyTree);
+    //.createDirectoryTree(directoyTree);
   }
 
   /**

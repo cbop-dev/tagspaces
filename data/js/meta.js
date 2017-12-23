@@ -1,4 +1,4 @@
-/* Copyright (c) 2012-2016 The TagSpaces Authors. All rights reserved.
+/* Copyright (c) 2012-2017 The TagSpaces Authors. All rights reserved.
  * Use of this source code is governed by a AGPL3 license that
  * can be found in the LICENSE file. */
 
@@ -24,24 +24,20 @@ define(function(require, exports, module) {
     var metaFilePath;
     var metaFolderPath = TSCORE.TagUtils.extractParentDirectoryPath(filePath) + TSCORE.dirSeparator + TSCORE.metaFolder;
     filePath = metaFolderPath + TSCORE.dirSeparator + TSCORE.TagUtils.extractFileName(filePath) + metaFileExtension;
-    TSCORE.metaFileList.every(function(element) {
+    TSCORE.metaFileList.map(function(element) {
       if (filePath.indexOf(element.path) >= 0) {
         metaFilePath = element.path;
-        return false;
       }
-      return true;
     });
     return metaFilePath;
   }
 
   function findMetaObjectFromFileList(filePath) {
     var metaObj = null;
-    TSCORE.fileList.every(function(element) {
-      if (element.path === filePath) {
+    TSCORE.fileList.map(function(element) {
+      if (element.path === filePath && element.meta) {
         metaObj = element.meta;
-        return false;
       }
-      return true;
     });
     return metaObj;
   }
@@ -70,8 +66,8 @@ define(function(require, exports, module) {
     TSCORE.IO.saveTextFilePromise(metaFilePath, content, true);
   }
 
-  function updateMetaData(sourceFileName, targetFileName) {
-    if (!targetFileName || !sourceFileName) {
+  function updateMetaData(sourceFilePath, targetFilePath) {
+    if (!targetFilePath || !sourceFilePath) {
       return false;
     }
 
@@ -79,41 +75,51 @@ define(function(require, exports, module) {
       TSCORE.IO.stopWatchingDirectories();
     }
 
-    var name = TSCORE.Utils.baseName(sourceFileName);
     var fileInMetaFileList = false;
-    TSCORE.metaFileList.forEach(function(element, index) {
-      if (element.name.indexOf(name) >= 0) {
+    var sourceFileName = TSCORE.Utils.baseName(sourceFilePath);
+    var pathSource = TSCORE.Utils.dirName(sourceFilePath);
+    var pathTarget = TSCORE.Utils.dirName(targetFilePath);
+    var metaIndexForRemove = [];
+    TSCORE.metaFileList.forEach(function(metaElement, index) {
+      if (metaElement.name.indexOf(sourceFileName) === 0) {
         fileInMetaFileList = true;
-        var pathSource = TSCORE.Utils.dirName(sourceFileName);
-        var pathTarget = TSCORE.Utils.dirName(targetFileName);
 
-        if (pathTarget.lastIndexOf(TSCORE.dirSeparator) === 0) {
-          pathSource = pathSource + TSCORE.dirSeparator;
+        var targetMetaName = TSCORE.Utils.baseName(targetFilePath) + "." + TSCORE.TagUtils.extractFileExtension(metaElement.name);
+        var targetMetaFolderPath = pathTarget + TSCORE.dirSeparator + TSCORE.metaFolder;
+        var targetMetaFilePath = targetMetaFolderPath + TSCORE.dirSeparator + targetMetaName;
+        var sourceMetaFilePath = pathSource + TSCORE.dirSeparator + TSCORE.metaFolder + TSCORE.dirSeparator + metaElement.name;
+
+        if (pathSource === pathTarget) {
+          metaElement.name = targetMetaName;
+          metaElement.path = targetMetaFilePath;
+        } else {
+          metaIndexForRemove.push(index);
         }
 
-        var targetName = TSCORE.Utils.baseName(targetFileName) + "." + element.name.split('.').pop();
-        var targetFilePath = pathTarget + TSCORE.dirSeparator + TSCORE.metaFolder + TSCORE.dirSeparator + targetName;
-
         createMetaFolderPromise(pathTarget).then(function() {
-          TSCORE.IO.renameFilePromise(element.path, targetFilePath).then(function() {
-            if (pathSource == TSCORE.currentPath) {
-              element.name = targetName;
-              element.path = targetFilePath;
-            } else {
-              TSCORE.metaFileList.splice(index, 1);
-            }
+          TSCORE.IO.renameFilePromise(sourceMetaFilePath, targetMetaFilePath).then(function() {
+            console.log('Meta file moved/renamed successfully to ' + targetMetaFilePath);
           });
         });
-
-
       }
     });
-    if (!fileInMetaFileList) { // file is probably from a search list
-      var sourcePathTemplate = TSCORE.Utils.dirName(sourceFileName) + TSCORE.dirSeparator + TSCORE.metaFolder + TSCORE.dirSeparator + TSCORE.Utils.baseName(sourceFileName);
-      var targetPathTemplate = TSCORE.Utils.dirName(targetFileName) + TSCORE.dirSeparator + TSCORE.metaFolder + TSCORE.dirSeparator + TSCORE.Utils.baseName(targetFileName);
-      TSCORE.IO.renameFilePromise(sourcePathTemplate + TSCORE.metaFileExt, targetPathTemplate + TSCORE.metaFileExt);
-      TSCORE.IO.renameFilePromise(sourcePathTemplate + TSCORE.thumbFileExt, targetPathTemplate + TSCORE.thumbFileExt);
-      TSCORE.IO.renameFilePromise(sourcePathTemplate + TSCORE.contentFileExt, targetPathTemplate + TSCORE.contentFileExt);
+
+    // file is probably from a search list
+    if (!fileInMetaFileList) {
+      var sourceMetaPathTemplate = pathSource + TSCORE.dirSeparator + TSCORE.metaFolder + TSCORE.dirSeparator + TSCORE.Utils.baseName(sourceFilePath);
+      var targetMetaPathTemplate = pathTarget + TSCORE.dirSeparator + TSCORE.metaFolder + TSCORE.dirSeparator + TSCORE.Utils.baseName(targetFilePath);
+      TSCORE.IO.renameFilePromise(sourceMetaPathTemplate + TSCORE.metaFileExt, targetMetaPathTemplate + TSCORE.metaFileExt);
+      TSCORE.IO.renameFilePromise(sourceMetaPathTemplate + TSCORE.thumbFileExt, targetMetaPathTemplate + TSCORE.thumbFileExt);
+      TSCORE.IO.renameFilePromise(sourceMetaPathTemplate + TSCORE.contentFileExt, targetMetaPathTemplate + TSCORE.contentFileExt);
+    }
+
+    // Cleaning up meteFileList
+    if (metaIndexForRemove.length > 0) {
+      TSCORE.metaFileList.forEach(function(metaElement, index) {
+        if (index in metaIndexForRemove) {
+          TSCORE.metaFileList.splice(index, 1);
+        }
+      });
     }
   }
 
@@ -174,25 +180,36 @@ define(function(require, exports, module) {
           resolve(filePath);
         });
       } else {
-        var metaFilePath = findMetaFilebyPath(filePath, TSCORE.thumbFileExt);
-        if (metaFilePath && isChrome) {
-          metaFilePath = "file://" + metaFilePath;
+        var thumbFilePath = getThumbFileLocation(filePath);
+        if (thumbFilePath && isChrome) {
+          thumbFilePath = "file://" + thumbFilePath;
         }
-        var fileExt = TSCORE.TagUtils.extractFileExtension(filePath);
-        if (metaFilePath) {
-          resolve(metaFilePath);
-        } else if (supportedImageExtensions.indexOf(fileExt) >= 0) {
-          if (isChrome) {
-            filePath = "file://" + filePath;
+        TSCORE.IO.getPropertiesPromise(thumbFilePath).then(function(stats) {
+          if (!stats) { // Thumbnails does not exists
+            var fileExt = TSCORE.TagUtils.extractFileExtension(filePath);
+            if (supportedImageExtensions.indexOf(fileExt) >= 0) {
+              if (isChrome) {
+                filePath = "file://" + filePath;
+              }
+              generateImageThumbnail(filePath).then(function(dataURL) {
+                resolve(dataURL);
+              }).catch(function() {
+                resolve();
+              });
+            } else {
+              resolve();
+            }
+          } else { // Thumbnails exists
+            resolve(thumbFilePath);
           }
-          generateImageThumbnail(filePath).then(function(dataURL) {
-            resolve(dataURL);
-          }).catch(function() {
-            resolve();
-          });
-        }
+        });
       }
     });
+  }
+
+  function getThumbFileLocation(filePath) {
+    var metaFolder = TSCORE.TagUtils.extractContainingDirectoryPath(filePath) + TSCORE.dirSeparator + TSCORE.metaFolder;
+    return metaFolder + TSCORE.dirSeparator + TSCORE.TagUtils.extractFileName(filePath) + TSCORE.thumbFileExt;
   }
 
   // should be in sync with the function from the PRO version
@@ -232,6 +249,9 @@ define(function(require, exports, module) {
 
   function loadMetaFileJsonPromise(entry) {
     return new Promise(function(resolve, reject) {
+      if(!entry.meta) {
+        entry.meta = {};
+      }
       var filePath = entry.path;
       var parentFolder = TSCORE.TagUtils.extractParentDirectoryPath(filePath);
       var metaFileJson = findMetaFilebyPath(filePath, TSCORE.metaFileExt);
@@ -296,6 +316,33 @@ define(function(require, exports, module) {
     return tags;
   }
 
+  function getDescriptionFromMetaFile(filePath) {
+    var metaObj = findMetaObjectFromFileList(filePath);
+    var description;
+    if (metaObj && metaObj.metaData && metaObj.metaData.description) {
+      description = metaObj.metaData.description;
+      return description;
+    }
+  }
+
+  function addMetaDescriptionToFile(filePath, description) {
+    var metaObj = findMetaObjectFromFileList(filePath);
+    if (!metaObj) {
+      metaObj = {
+        thumbnailPath: "",
+        metaData: null,
+      };
+    }
+
+    if (!metaObj.metaData) {
+      metaObj.metaData = {
+        description: description
+      };
+    }
+    metaObj.metaData.description = description;
+    saveMetaData(filePath, metaObj.metaData);
+  }
+
   //meta tag utils
   function addMetaTags(filePath, tags) {
     var metaObj = findMetaObjectFromFileList(filePath);
@@ -308,7 +355,8 @@ define(function(require, exports, module) {
 
     if (!metaObj.metaData) {
       metaObj.metaData = {
-        tags: []
+        tags: [],
+        description: ''
       };
     }
 
@@ -372,11 +420,21 @@ define(function(require, exports, module) {
       }
 
       TSCORE.IO.getFileContentPromise(metadataPath, "text").then(function(content) {
+        console.log('Location Metadata: ' + content);
+
+        // Cleaning up
+        var UTF8_BOM = "\ufeff";
+        if (content.indexOf(UTF8_BOM) === 0) {
+          content = content.substring(1, content.length);
+        }
         var metadata = JSON.parse(content);
-        console.log('Location Metadata: ' + JSON.stringify(metadata));
         resolve(metadata);
       }).catch(function(err) {
-        reject("loadFolderMetaDataPromise: Error reading " + metadataPath);
+        if (TSCORE.PRO && TSCORE.PRO.Directory.getFolderMetaTemplate) {
+          resolve(TSCORE.PRO.Directory.getFolderMetaTemplate());
+        } else {
+          reject("loadFolderMetaDataPromise: Error reading " + metadataPath);
+        }
       });
     });
   }
@@ -385,6 +443,7 @@ define(function(require, exports, module) {
     return new Promise(function(resolve, reject) {
       if (dirPath.lastIndexOf(TSCORE.metaFolder) >= dirPath.length - TSCORE.metaFolder.length) {
         console.log("Can not create meta folder in a meta folder");
+        reject();
         return;
       }
       var metaDirPath = dirPath + TSCORE.dirSeparator + TSCORE.metaFolder;
@@ -408,7 +467,9 @@ define(function(require, exports, module) {
   exports.loadMetaFileJsonPromise = loadMetaFileJsonPromise;
   exports.loadThumbnailPromise = loadThumbnailPromise;
   exports.getTagsFromMetaFile = getTagsFromMetaFile;
+  exports.getDescriptionFromMetaFile = getDescriptionFromMetaFile;
   exports.addMetaTags = addMetaTags;
+  exports.addMetaDescriptionToFile = addMetaDescriptionToFile;
   exports.renameMetaTag = renameMetaTag;
   exports.removeMetaTag = removeMetaTag;
   exports.loadFolderMetaDataPromise = loadFolderMetaDataPromise;

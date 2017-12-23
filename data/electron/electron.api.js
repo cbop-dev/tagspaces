@@ -21,16 +21,9 @@ define(function(require, exports, module) {
   //console.log("CM Args: " + JSON.stringify(process.argv));
 
   var TSCORE = require("tscore");
-  var TSPOSTIO = require("tspostioapi");
+  
   var fsWatcher;
   var win = remote.getCurrentWindow();
-
-
-  //console.log(ipcRenderer.sendSync('synchronous-message', 'ping')); // prints "pong"
-  //ipcRenderer.on('asynchronous-reply', function(event, arg) {
-  //  console.log(arg); // prints "pong"
-  //});
-  //ipcRenderer.send('asynchronous-message', 'ping');
 
   var showMainWindow = function() {
     win.show();
@@ -50,20 +43,14 @@ define(function(require, exports, module) {
 
   function handleStartParameters() {
     var filePath = TSCORE.Utils.getURLParameter("open");
-    if (filePath && (filePath.length > 0)) {
+    if (filePath && filePath.length) {
       filePath = decodeURIComponent(filePath);
       console.log("Opening file from command line: " + filePath);
       TSCORE.FileOpener.openFileOnStartup(filePath);
     }
   }
 
-  function initMainMenu() {
-    //testing icpRenderer from icp bind
-    /*if (!TSCORE.Config.getShowMainMenu()) {
-     return;
-     }*/
-    //
-
+  function initElectronIntegration() {
     var Menu = remote.Menu;
     var template = [
       {
@@ -72,7 +59,6 @@ define(function(require, exports, module) {
           {
             label: $.i18n.t("ns.common:openNewInstance"),
             accelerator: '',
-            //click: TSCORE.UI.openNewInstance
             click: function() {
               ipcRenderer.send("new-win", "newWin");
             }
@@ -141,12 +127,8 @@ define(function(require, exports, module) {
             label: $.i18n.t("ns.common:exitApp"),
             accelerator: '',
             click: function() {
-              if (!TSCORE.currentPath) {
-                TSCORE.showAlertDialog("Not open current directory !");
-              } else {
-                TSCORE.Config.saveSettings();
-                ipcRenderer.send('quit-application', 'Bye, bye...');
-              }
+              //TSCORE.Config.saveSettings();
+              ipcRenderer.send('quit-application', 'Bye, bye...');
             }
           }
         ]
@@ -194,11 +176,9 @@ define(function(require, exports, module) {
         submenu: [
           {
             label: $.i18n.t("ns.common:reloadApplication"),
-            accelerator: 'CmdOrCtrl+R',
+            accelerator: 'F5',
             click: function(item, focusedWindow) {
-              if (focusedWindow) {
-                focusedWindow.reload();
-              }
+              ipcRenderer.send('relaunch-app', 'relaunch');
             }
           },
           {
@@ -223,7 +203,7 @@ define(function(require, exports, module) {
               }
             })(),
             click: function(item, focusedWindow) {
-              win.setFullScreen(!win.isFullScreen());
+              focusedWindow.setFullScreen(!focusedWindow.isFullScreen());
             }
           },
           {
@@ -245,16 +225,10 @@ define(function(require, exports, module) {
         label: $.i18n.t("ns.common:help"),
         submenu: [
           {
-            label: $.i18n.t("ns.common:shortcutKeys"),
             accelerator: "F1",
+            label: $.i18n.t("ns.common:documentation"),
             click: function() {
-              TSCORE.UI.showKeysDialog();
-            }
-          },
-          {
-            label: $.i18n.t("ns.common:license"),
-            click: function() {
-              TSCORE.UI.showLicenseDialog();
+              TSCORE.UI.showDocumentation();
             }
           },
           {
@@ -264,9 +238,9 @@ define(function(require, exports, module) {
             }
           },
           {
-            label: $.i18n.t("ns.common:documentation"),
+            label: $.i18n.t("ns.common:shortcutKeys"),
             click: function() {
-              TSCORE.UI.showDocumentation();
+              TSCORE.UI.showKeysDialog();
             }
           },
           {
@@ -309,6 +283,15 @@ define(function(require, exports, module) {
             label: $.i18n.t("ns.common:reportIssues"),
             click: function() {
               TSCORE.UI.reportIssues();
+            }
+          },
+          {
+            type: 'separator'
+          },
+          {
+            label: $.i18n.t("ns.common:license"),
+            click: function() {
+              TSCORE.UI.showLicenseDialog();
             }
           },
           {
@@ -397,7 +380,6 @@ define(function(require, exports, module) {
         case "next-file":
           if (TSCORE.selectedFiles[0]) {
             TSCORE.FileOpener.openFile(TSCORE.PerspectiveManager.getNextFile(TSCORE.selectedFiles[0]));
-            TSCORE.PerspectiveManager.selectFile(TSCORE.FileOpener.getOpenedFilePath());
           } else {
             TSCORE.showAlertDialog($.i18n.t("ns.common:selectFile"));
           }
@@ -405,7 +387,6 @@ define(function(require, exports, module) {
         case "previous-file":
           if (TSCORE.selectedFiles[0]) {
             TSCORE.FileOpener.openFile(TSCORE.PerspectiveManager.getPrevFile(TSCORE.selectedFiles[0]));
-            TSCORE.PerspectiveManager.selectFile(TSCORE.FileOpener.getOpenedFilePath());
           } else {
             TSCORE.showAlertDialog($.i18n.t("ns.common:selectFile"));
           }
@@ -420,6 +401,9 @@ define(function(require, exports, module) {
       var audioEvent = new CustomEvent('resume', {'detail': arg});
       window.dispatchEvent(audioEvent);
     });
+
+    ipcRenderer.send('global-shortcuts-enabled', TSCORE.Config.getEnableGlobalKeyboardShortcuts());
+
   }
 
   // Brings the TagSpaces window on top of the windows
@@ -500,7 +484,7 @@ define(function(require, exports, module) {
     };
     var directoyTree = generateDirectoryTree(dirPath);
     //console.log(JSON.stringify(directoyTree));
-    TSPOSTIO.createDirectoryTree(directoyTree);
+    return directoyTree;
   }
 
 
@@ -520,6 +504,7 @@ define(function(require, exports, module) {
         if (error) {
           console.log("Error listing directory " + path);
           resolve([]); // returning results even if any promise fails
+          return;
         }
 
         if (entries) {
@@ -529,8 +514,10 @@ define(function(require, exports, module) {
           Promise.all(statEntriesPromises).then(function(enhancedEntries) {
             console.timeEnd("listDirectoryPromise");
             resolve(enhancedEntries);
+            return;
           }, function(err) {
             resolve([]); // returning results even if any promise fails
+            return;
           });
         }
       });
@@ -562,6 +549,7 @@ define(function(require, exports, module) {
         if (error) {
           console.log("Error listing directory " + path);
           resolve(enhancedEntries); // returning results even if any promise fails
+          return;
         }
 
         if (entries) {
@@ -598,6 +586,7 @@ define(function(require, exports, module) {
           });
           console.timeEnd("listDirectoryPromise");
           resolve(enhancedEntries);
+          return;
         }
       });
     });
@@ -715,12 +704,16 @@ define(function(require, exports, module) {
    */
   function renameFilePromise(filePath, newFilePath) {
     console.log("Renaming file: " + filePath + " to " + newFilePath);
+    stopWatchingDirectories();
     return new Promise(function(resolve, reject) {
       if (filePath === newFilePath) {
         reject($.i18n.t("ns.common:fileTheSame"), $.i18n.t("ns.common:fileNotMoved"));
         return;
       } else if (fs.lstatSync(filePath).isDirectory()) {
         reject($.i18n.t("ns.common:fileIsDirectory", {fileName: filePath}));
+        return;
+      } else if (!fs.existsSync(filePath)) {
+        reject("Source file does not exists " + filePath, $.i18n.t("ns.common:fileRenameFailed"));
         return;
       } else if (fs.existsSync(newFilePath)) {
         reject($.i18n.t("ns.common:fileExists", {fileName: newFilePath}), $.i18n.t("ns.common:fileRenameFailed"));
@@ -857,6 +850,8 @@ define(function(require, exports, module) {
    * @returns {Promise.<Success, Error>}
    */
   function saveFilePromise(filePath, content, overwrite) {
+    overwrite = overwrite || true; // TODO check if true should the default value
+
     return new Promise(function(resolve, reject) {
       function saveFile(filePath, content, isNewFile) {
         fs.writeFile(filePath, content, 'utf8', function(error) {
@@ -869,7 +864,6 @@ define(function(require, exports, module) {
       }
 
       getPropertiesPromise(filePath).then(function(entry) {
-        overwrite = overwrite || true;
         if (entry && entry.isFile && overwrite) {
           saveFile(filePath, content, false);
         } else {
@@ -991,7 +985,19 @@ define(function(require, exports, module) {
     var chooser = $('#folderDialogNodeWebkit');
     chooser.on("change", function(ev) {
       var file = ev.target.files[0];
-      TSPOSTIO.selectDirectory(file.path);
+      var dirPath = file.path;
+
+      if (!TSCORE.TagUtils.stringEndsWith(dirPath, TSCORE.dirSeparator)) {
+        dirPath = dirPath + TSCORE.dirSeparator;
+      }
+      var dirName = TSCORE.TagUtils.extractContainingDirectoryName(dirPath);
+      $('#connectionName').val(dirName);
+      $('#folderLocation').val(dirPath);
+      $('#folderLocation2').val(dirPath);
+      $('#folderLocation').blur();
+      $('#folderLocation2').blur();
+      $('#moveCopyDirectoryPath').val(dirPath);
+
       $(this).off("change");
       $(this).val("");
     });
@@ -1044,7 +1050,7 @@ define(function(require, exports, module) {
   }
 
   // Platform specific calls
-  exports.initMainMenu = initMainMenu;
+  exports.initElectronIntegration = initElectronIntegration;
   exports.showMainWindow = showMainWindow;
 
   exports.watchDirectory = watchDirectory; // Platform specific

@@ -23,8 +23,8 @@ define(function(require, exports, module) {
     '<button class="btn btn-link btn-lg tagGroupIcon" data-toggle="collapse" data-target="#tagButtons{{@index}}" data-i18n="[title]ns.common:toggleTagGroup" title="{{../toggleTagGroup}}">' +
     '<i class="fa fa-tags fa-fw"></i>' +
     '</button>' +
-    '<button class="btn btn-link tagGroupTitle flexMaxWidth" data-toggle="collapse" data-target="#tagButtons{{@index}}" key="{{key}}">{{title}}&nbsp;' +
-    '<sup><span class="badge" style="font-size: 9px;" data-i18n="[title]ns.common:tagGroupTagsCount">{{children.length}}</span></sup></button>' +
+    '<button class="btn btn-link tagGroupTitle flexMaxWidth" data-toggle="collapse" data-target="#tagButtons{{@index}}" key="{{key}}">{{title}}' +
+    '<sup {{#unless collapse}}style="display: none;"{{/unless}}><span class="badge" style="margin-left: 5px; font-size: 9px;" data-i18n="[title]ns.common:tagGroupTagsCount">{{children.length}}</span></sup></button>' +
     '<button class="btn btn-link btn-lg tagGroupActions" key="{{key}}" data-i18n="[title]ns.common:tagGroupOperations" title="{{../tagGroupOperations}}">' +
     '<b class="fa fa-ellipsis-v"></b>' +
     '</button>' +
@@ -297,6 +297,11 @@ define(function(require, exports, module) {
         if (areaId) {
           var index = areaId.substring(areaId.length - 1);
           tagGroups[index].collapse = $(areaId).is(':visible');
+          if (tagGroups[index].collapse) {
+            $(areaId).parent().find('sup').show();
+          } else {
+            $(areaId).parent().find('sup').hide();
+          }
           TSCORE.Config.saveSettings();
         }
       });
@@ -370,6 +375,7 @@ define(function(require, exports, module) {
     });
 
     $tagGroupsContent.append($('<button>', {
+      'id': 'openTagGroupCreateButton',
       'class': 'btn btn-link',
       'style': 'margin-top: 15px; margin-left: -8px; display: block;  color: #1DD19F;',
       'text': $.i18n.t('ns.common:createTagGroup'),
@@ -377,6 +383,7 @@ define(function(require, exports, module) {
     }).on('click', TSCORE.showDialogTagGroupCreate));
 
     $tagGroupsContent.append($('<button>', {
+      'id': 'importTagGroupButton',
       'class': 'btn btn-link',
       'style': 'margin-top: 0px; display: block; margin-left: -8px; color: #1DD19F;',
       'text': $.i18n.t('ns.common:importTags'),
@@ -461,31 +468,34 @@ define(function(require, exports, module) {
         });
       }
     }
-    var metaTags = TSCORE.Meta.getTagsFromMetaFile(filePath);
-    if (metaTags.length > 0) {
-      for (var i = 0; i < metaTags.length; i++) {
-        var tag = metaTags[i];
-        if (!tag.style) {
-          tag.style = generateTagStyle(TSCORE.Config.findTag(tag.tag));
+    if (filePath) {
+      var metaTags = TSCORE.Meta.getTagsFromMetaFile(filePath);
+      if (metaTags.length > 0) {
+        for (var i = 0; i < metaTags.length; i++) {
+          var tag = metaTags[i];
+          if (!tag.style) {
+            tag.style = generateTagStyle(TSCORE.Config.findTag(tag.tag));
+          }
         }
+        context.tags = context.tags.concat(metaTags);
       }
-
-      context.tags = context.tags.concat(metaTags);
     }
     return tagButtonTmpl(context);
   }
 
   // Get the color for a tag
   function generateTagStyle(tagObject) {
-    var tagStyle = '';
-    if (tagObject.color !== undefined) {
-      var textColor = tagObject.textcolor;
-      if (textColor === undefined) {
-        textColor = 'white';
-      }
-      tagStyle = 'color: ' + textColor + ' !important; background-color: ' + tagObject.color + ' !important;';
+    var tagTextColor = TSCORE.Config.getDefaultTagTextColor();
+    var tagColor = TSCORE.Config.getDefaultTagColor();
+
+    if (tagObject.textcolor) {
+      tagTextColor = tagObject.textcolor;
     }
-    return tagStyle;
+    if (tagObject.color) {
+      tagColor = tagObject.color;
+    }
+
+    return 'color: ' + tagTextColor + ' !important; background-color: ' + tagColor + ' !important;';
   }
 
   function showDialogTagCreate() {
@@ -709,12 +719,6 @@ define(function(require, exports, module) {
       return;
     }
     console.log('Adding tags...');
-    //function split( val ) {
-    //    return val.split( /,\s*/ );
-    //}
-    //function extractLast( term ) {
-    //    return split( term ).pop();
-    //}*/
     $('#tags').select2('data', null);
     $('#tags').select2({
       multiple: true,

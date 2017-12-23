@@ -1,4 +1,4 @@
-/* Copyright (c) 2012-2015 The TagSpaces Authors. All rights reserved.
+/* Copyright (c) 2012-2017 The TagSpaces Authors. All rights reserved.
  * Use of this source code is governed by a AGPL3 license that
  * can be found in the LICENSE file. */
 /* global define, Mousetrap, Handlebars  */
@@ -7,7 +7,6 @@ define(function(require, exports, module) {
   console.log('Loading options.ui.js ...');
   var TSCORE = require('tscore');
   var tsExtManager = require('tsextmanager');
-  var saveAs = require('libs/filesaver.js/FileSaver.min.js');
 
   function generateSelectOptions(parent, data, selectedId, helpI18NString) {
     parent.empty();
@@ -75,7 +74,6 @@ define(function(require, exports, module) {
     $('#useGenerateThumbnails').attr('disabled', !isMetaEnabled);
   }
 
-
   function initUI() {
     var defaultTagColor = TSCORE.Config.getDefaultTagColor();
     var defaultTagTextColor = TSCORE.Config.getDefaultTagTextColor();
@@ -127,6 +125,13 @@ define(function(require, exports, module) {
           TSCORE.Config.loadDefaultSettings();
         });
     });
+    $('#recreateDefaultTagGroups').click(function() {
+      TSCORE.showConfirmDialog(
+        $.i18n.t('ns.dialogs:recreateDefaultTagGroups'),
+        $.i18n.t('ns.dialogs:recreateDefaultTagGroupsMessage'), function() {
+          TSCORE.Config.restoreDefaultTagGroups();
+        });
+    });
     $('#keyBindingInstructions').toggle();
     $('#keyBindingInstructionsToggle').on('click', function() {
       $('#keyBindingInstructions').toggle();
@@ -142,25 +147,11 @@ define(function(require, exports, module) {
       $('#showMainMenuCheckbox').parent().hide();
     }
 
-    $('#exportTagGroupsButton').on('click', exportTagGroups);
+    $('#exportTagGroupsButton').on('click', TSCORE.Config.exportTagGroups);
 
     $('#enableMetaData').change(function() {
       enableMetaData();
     });
-  }
-
-  function exportTagGroups() {
-    var jsonFormat = '{ "appName": "' + TSCORE.Config.DefaultSettings.appName +
-      '", "appVersion": "' + TSCORE.Config.DefaultSettings.appVersion +
-      '", "appBuild": "' + TSCORE.Config.DefaultSettings.appBuild +
-      '", "settingsVersion": ' + TSCORE.Config.DefaultSettings.settingsVersion +
-      ', "tagGroups": ';
-    var blob = new Blob([jsonFormat + JSON.stringify(TSCORE.Config.getAllTagGroupData()) + '}'], {
-      type: 'application/json'
-    });
-    var dateTimeTag = TSCORE.TagUtils.formatDateTime4Tag(new Date(), true);
-    saveAs(blob, 'tsm[' + dateTimeTag + '].json');
-    console.log('TagGroup Data Exported...');
   }
 
   function reInitUI() {
@@ -197,6 +188,7 @@ define(function(require, exports, module) {
     $('#useDefaultLocationCheckbox').attr('checked', TSCORE.Config.getUseDefaultLocation());
     $('#coloredFileExtensionsEnabledCheckbox').attr('checked', TSCORE.Config.getColoredFileExtensionsEnabled());
     $('#showTagAreaOnStartupCheckbox').attr('checked', TSCORE.Config.getShowTagAreaOnStartup());
+    $('#enableGlobalKeyboardShortcutsCheckbox').attr('checked', TSCORE.Config.getEnableGlobalKeyboardShortcuts());
     if (TSCORE.PRO) {
       $('#enableMetaData').attr('checked', TSCORE.Config.getEnableMetaData());
 		//CB-Edit:
@@ -322,6 +314,7 @@ define(function(require, exports, module) {
     TSCORE.Config.setUseDefaultLocation($('#useDefaultLocationCheckbox').is(':checked'));
     TSCORE.Config.setColoredFileExtensionsEnabled($('#coloredFileExtensionsEnabledCheckbox').is(':checked'));
     TSCORE.Config.setShowTagAreaOnStartup($('#showTagAreaOnStartupCheckbox').is(':checked'));
+    TSCORE.Config.setEnableGlobalKeyboardShortcuts($('#enableGlobalKeyboardShortcutsCheckbox').is(':checked'));
     TSCORE.Config.saveSettings();
   }
 

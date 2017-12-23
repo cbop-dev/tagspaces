@@ -14,7 +14,6 @@ define(function(require, exports, module) {
   console.log("Loading web.js..");
 
   var TSCORE = require("tscore");
-  var TSPOSTIO = require("tspostioapi");
 
   require("webdav");
   //require("web/offlinelib/offline.min");
@@ -170,8 +169,7 @@ define(function(require, exports, module) {
     TSCORE.showLoadingAnimation();
 
     var directoyTree = [];
-    //console.log(JSON.stringify(directoyTree));
-    TSPOSTIO.createDirectoryTree(directoyTree);
+    return directoyTree;
   }
 
   /**
@@ -295,7 +293,7 @@ define(function(require, exports, module) {
   function getFileContentPromise(filePath, type) {
     console.log("getFileContent file: " + filePath);
     return new Promise(function(resolve, reject) {
-      var ajax = davClient.getAjax("GET", filePath);
+      var ajax = davClient.getAjax("GET", encodeURI(filePath));
       ajax.onreadystatechange = null;
       ajax.responseType = type || "arraybuffer";
       ajax.onerror = reject;

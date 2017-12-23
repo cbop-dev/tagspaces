@@ -9,7 +9,6 @@ define(function(require, exports, module) {
 
   var perspectives;
   var TSCORE = require('tscore');
-  var TSPOSTIO = require("tspostioapi");
 
   function initPerspective(extPath) {
     return new Promise(function(resolve, reject) {
@@ -51,21 +50,27 @@ define(function(require, exports, module) {
     }
 
     return Promise.all(promises).then(function() {
+      TSCORE.IO.checkAccessFileURLAllowed ? TSCORE.IO.checkAccessFileURLAllowed() : true;
+
       initPerspectiveSwitcher();
       // Opening last saved location by the start of the application
       var lastLocation = TSCORE.Config.getLastOpenedLocation();
       if (TSCORE.Config.getUseDefaultLocation()) {
         lastLocation = TSCORE.Config.getDefaultLocation();
       }
-      if (lastLocation && lastLocation.length >= 1) {
+
+      var startupFilePath = TSCORE.Utils.getURLParameter("open");
+      if (startupFilePath && startupFilePath.length) {
+        startupFilePath = decodeURIComponent(startupFilePath);
+        TSCORE.FileOpener.openFileOnStartup(startupFilePath);
+      } else if (lastLocation && lastLocation.length >= 1) {
         TSCORE.openLocation(lastLocation);
-        TSCORE.IO.checkAccessFileURLAllowed ? TSCORE.IO.checkAccessFileURLAllowed() : true;
-        var evt = TSCORE.createDocumentEvent("initApp");
-        TSCORE.fireDocumentEvent(evt);
-        $("#viewContainers").removeClass("appBackgroundTile");
       }
+
+      TSCORE.fireDocumentEvent(TSCORE.createDocumentEvent("initApp"));
+      $("#viewContainers").removeClass("appBackgroundTile");
       $('#loading').hide();
-      if (isNode || isElectron) {
+      if (isElectron) {
         TSCORE.IO.showMainWindow();
       }
       return true;
@@ -200,16 +205,6 @@ define(function(require, exports, module) {
     }
   }
 
-  function updateTreeData(treeData) {
-    for (var i = 0; i < perspectives.length; i++) {
-      try {
-        perspectives[i].updateTreeData(treeData);
-      } catch (e) {
-        console.warn("Error while executing 'updateTreeData' on "); // + perspectives[i].ID + ' ' + e);
-      }
-    }
-  }
-
   function updateFileBrowserData(dirList, isSearchResult) {
     console.log('Updating the file browser data...');
     TSCORE.fileList = [];
@@ -223,7 +218,7 @@ define(function(require, exports, module) {
 
     for (var i = 0; i < dirList.length; i++) {
       // Considering Unix HiddenEntries (. in the beginning of the filename)
-      if (TSCORE.Config.getShowUnixHiddenEntries() || !TSCORE.Config.getShowUnixHiddenEntries() && dirList[i].path.indexOf(TSCORE.dirSeparator + '.') < 0) {
+      if (TSCORE.Config.getShowUnixHiddenEntries() || !TSCORE.Config.getShowUnixHiddenEntries() && (dirList[i].name.length && dirList[i].name[0] != '.')) {
         filename = dirList[i].name.replace(/(<([^>]+)>)/gi, ''); // sanitizing filename
         path = dirList[i].path.replace(/(<([^>]+)>)/gi, ''); // sanitizing filepath
         title = TSCORE.TagUtils.extractTitle(filename);
@@ -309,9 +304,19 @@ define(function(require, exports, module) {
   function refreshFileListContainer() {
     // TODO consider search view
     TSCORE.IO.listDirectoryPromise(TSCORE.currentPath).then(function(entries) {
-      TSPOSTIO.listDirectory(entries);
+      TSCORE.PerspectiveManager.updateFileBrowserData(entries);
+      TSCORE.updateSubDirs(entries);      
     }).catch(function(err) {
-      TSPOSTIO.errorOpeningPath(TSCORE.currentPath);
+      // Normalazing the paths
+      var dir1 = TSCORE.TagUtils.cleanTrailingDirSeparator(TSCORE.currentLocationObject.path);
+      var dir2 = TSCORE.TagUtils.cleanTrailingDirSeparator(TSCORE.currentPath);
+      // Close the current location if the its path could not be opened
+      if (dir1 === dir2) {
+        TSCORE.showAlertDialog($.i18n.t('ns.dialogs:errorOpeningLocationAlert'));
+        TSCORE.closeCurrentLocation();
+      } else {
+        TSCORE.showAlertDialog($.i18n.t('ns.dialogs:errorOpeningPathAlert'));
+      }      
       console.warn("Error listing directory" + err);
     });
   }
@@ -391,7 +396,6 @@ define(function(require, exports, module) {
   exports.getNextFile = getNextFile;
   exports.getPrevFile = getPrevFile;
   exports.selectFile = selectFile;
-  exports.updateTreeData = updateTreeData;
   exports.updateFileBrowserData = updateFileBrowserData;
   exports.refreshFileListContainer = refreshFileListContainer;
   exports.clearSelectedFiles = clearSelectedFiles;
